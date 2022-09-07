@@ -141,6 +141,20 @@ def generate_stream_lines(X,Y,Ex,Ey):
 	
 	return stream_lines
 
+def write_stream_lines(filename, stream_lines):
+	with open(filename, "w") as file:
+		separate_next_line = False
+		for line in stream_lines:
+			if not separate_next_line:
+				separate_next_line = True
+			else:
+				file.write("\n")
+			for point in line:
+				file.write(f"{point[0]:.16f}")
+				file.write("; ")
+				file.write(f"{point[1]:.16f}")
+				file.write("\n")
+
 def test():
 	(X,Y,Ex,Ey) = vector_field()
 	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
@@ -149,6 +163,7 @@ def test():
 def main():
 	(X,Y,Ex,Ey) = vector_field()
 	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
+	write_stream_lines("test.dat", stream_lines)
 
 if __name__ == '__main__':
 	main()
