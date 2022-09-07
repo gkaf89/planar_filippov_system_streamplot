@@ -95,19 +95,19 @@ def main():
 	segments_end = {}
 	for segment in line_segments:
 		start_point = segment[0,:]
-		c0 = btstr.BitArray(float=start_point, length=64).hex
-		c1 = btstr.BitArray(float=start_point, length=64).hex
+		c0 = btstr.BitArray(float=start_point[0], length=64).hex
+		c1 = btstr.BitArray(float=start_point[1], length=64).hex
 		key_point_start = (c0, c1)
 		
 		end_point = segment[1,:]
-		c0 = btstr.BitArray(float=end_point, length=64).hex
-		c1 = btstr.BitArray(float=end_point, length=64).hex
+		c0 = btstr.BitArray(float=end_point[0], length=64).hex
+		c1 = btstr.BitArray(float=end_point[1], length=64).hex
 		key_point_end = (c0, c1)
 		
 		segment_positioned = False
 		if key_point_start in segments_end:
 			extendable_segment = segments_end.pop(key_point_start)
-			extendable_segment.push_front(segment)
+			extendable_segment.push_front(start_point)
 			segments_end[key_point_end] = extendable_segment
 			segment_positioned = True
 		if key_point_end in segments_start:
@@ -118,7 +118,8 @@ def main():
 		
 		if not segment_positioned:
 			extendable_segment = DoublyLinkedList()
-			extendable_segment.push_front(segment)
+			extendable_segment.push_front(end_point)
+			extendable_segment.push_back(start_point)
 			segments_end[key_point_end] = extendable_segment
 			segments_start[key_point_start] = extendable_segment
 	print(len(segments_end))
