@@ -17,7 +17,6 @@ class Node:
 	def create(data, prev, next):
 		return Node(data, prev, next)
 
-
 class DoublyLinkedList:
 	def __init__(self):
 		self.head = None
@@ -32,6 +31,7 @@ class DoublyLinkedList:
 			self.tail = self.head
 		else:
 			new_head = Node(data, self.head, None)
+			self.head.next = new_head
 			self.head = new_head
 	
 	def push_back(self, data):
@@ -40,6 +40,7 @@ class DoublyLinkedList:
 			self.head = self.tail
 		else:
 			new_tail = Node(data, None, self.tail)
+			self.tail.prev = new_tail
 			self.tail = new_tail
 	
 	def get_front(self):
@@ -61,6 +62,8 @@ class DoublyLinkedList:
 			new_head = self.head.prev
 			if new_head is not None:
 				new_head.next = None
+			else:
+				self.tail = None
 			self.head = new_head
 	
 	def pop_back(self):
@@ -70,11 +73,11 @@ class DoublyLinkedList:
 			new_tail = self.tail.next
 			if new_tail is not None:
 				new_tail.prev = None
+			else:
+				self.head = None
 			self.tail = new_tail
 
-# xs1 = bitstring.BitArray(float=asd[1][0,1], length=64).bin
-
-def main():
+def vector_field():
 	# 1D arrays
 	x = np.arange(-5,5,0.1)
 	y = np.arange(-5,5,0.1)
@@ -86,9 +89,12 @@ def main():
 	Ex = (X + 1)/((X+1)**2 + Y**2) - (X - 1)/((X-1)**2 + Y**2)
 	Ey = Y/((X+1)**2 + Y**2) - Y/((X-1)**2 + Y**2)
 	
+	return (X,Y,Ex,Ey)
+
+def generate_stream_lines(X,Y,Ex,Ey):
 	# Depict illustration
 	plt.figure(figsize=(10, 10))
-	streamlines = plt.streamplot(X,Y,Ex,Ey, density=1.4, linewidth=None, color='#A23BEC')
+	streamlines = plt.streamplot(X, Y, Ex, Ey, density=1.4, linewidth=None, color='#A23BEC')
 	line_segments = streamlines.lines.get_segments()
 	
 	segments_start = {}
@@ -122,8 +128,27 @@ def main():
 			extendable_segment.push_back(start_point)
 			segments_end[key_point_end] = extendable_segment
 			segments_start[key_point_start] = extendable_segment
-	print(len(segments_end))
-	print(len(segments_start))
+	
+	stream_lines = []
+	for segment_key in segments_start:
+		stream_line = []
+		segment = segments_start[segment_key]
+		while not segment.empty():
+			point = segment.get_front()
+			stream_line.append(point)
+			segment.pop_front()
+		stream_lines.append(stream_line)
+	
+	return stream_lines
+
+def test():
+	(X,Y,Ex,Ey) = vector_field()
+	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
+	return stream_lines
+
+def main():
+	(X,Y,Ex,Ey) = vector_field()
+	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
 
 if __name__ == '__main__':
 	main()
