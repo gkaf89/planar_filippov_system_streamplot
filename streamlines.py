@@ -141,6 +141,53 @@ def generate_stream_lines(X,Y,Ex,Ey):
 	
 	return stream_lines
 
+def cumulative_distance(line):
+	cumulative_length = 0.0
+	lengths = []
+	previous_point = None
+	
+	for point in line:
+		if previous_point is None:
+			distance = 0.0
+		else:
+			distance = np.linalg.norm(point - previous_point)
+		
+		cumulative_length = cumulative_length + distance
+		lengths.append(cumulative_length)
+		previous_point = point
+	
+	return lengths
+
+def find_midpoint(line):
+	if len(line) < 2:
+		return None
+	
+	lengths = cumulative_distance(line)
+	total_length = lengths[-1]
+	
+	mid_length = total_length/2.0
+	
+	for n in range(0,len(line)-1):
+		if lengths[n+1] > mid_length:
+			distance = lengths[n+1] - lengths[n]
+			difference = lengths[n+1] - mid_length
+			mid_segment = np.array([line[n], line[n+1]])
+			location = difference/distance
+			return (mid_segment, location)
+	
+	return None
+
+def to_gnuplot_midpoints(arrows):
+	point, location = arrows
+	
+	p0 = point[0,:]
+	p1 = point[1,:]
+	
+	p_mid = p0 + location*(p1 - p0)
+	
+	return (p0, p_mid, p1)
+
+
 def write_stream_lines(filename, stream_lines):
 	with open(filename, "w") as file:
 		separate_next_line = False
