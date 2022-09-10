@@ -2,79 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import bitstring as btstr
 
-class Node:
-	def __init__(self, data, prev, next):
-		self.data = data
-		self.prev = prev
-		self.next = next
-	
-	@classmethod
-	def empty():
-		return Node(None, None, None)
-	
-	@classmethod
-	def create(data, prev, next):
-		return Node(data, prev, next)
-
-class DoublyLinkedList:
-	def __init__(self):
-		self.head = None
-		self.tail = None
-	
-	def empty(self):
-		return (self.head is None) and (self.tail is None)
-		
-	def push_front(self, data):
-		if self.head is None:
-			self.head = Node(data, None, None)
-			self.tail = self.head
-		else:
-			new_head = Node(data, self.head, None)
-			self.head.next = new_head
-			self.head = new_head
-	
-	def push_back(self, data):
-		if self.tail is None:
-			self.tail = Node(data, None, None)
-			self.head = self.tail
-		else:
-			new_tail = Node(data, None, self.tail)
-			self.tail.prev = new_tail
-			self.tail = new_tail
-	
-	def front(self):
-		if self.head is None:
-			return None
-		else:
-			return self.head.data
-	
-	def back(self):
-		if self.tail is None:
-			return None
-		else:
-			return self.tail.data 
-	
-	def pop_front(self):
-		if self.head is None:
-			return
-		else:
-			new_head = self.head.prev
-			if new_head is not None:
-				new_head.next = None
-			else:
-				self.tail = None
-			self.head = new_head
-	
-	def pop_back(self):
-		if self.tail is None:
-			return
-		else:
-			new_tail = self.tail.next
-			if new_tail is not None:
-				new_tail.prev = None
-			else:
-				self.head = None
-			self.tail = new_tail
+import datastructures as struct
 
 def vector_field():
 	# 1D arrays
@@ -122,7 +50,7 @@ def generate_stream_lines(X,Y,Ex,Ey):
 			segment_positioned = True
 		
 		if not segment_positioned:
-			extendable_segment = DoublyLinkedList()
+			extendable_segment = struct.Dequeue()
 			extendable_segment.push_front(end_point)
 			extendable_segment.push_back(start_point)
 			segments_end[key_point_end] = extendable_segment
@@ -172,8 +100,7 @@ def find_midpoint(line):
 			difference = lengths[n+1] - mid_length
 			
 			location_fraction = difference/distance
-			if location_fraction < 0.01:
-				loction_fraction = 0.01
+			location_fraction = min( 0.01, loction_fraction )
 			
 			end_point_fraction = location_fraction
 			if end_point_fraction > 0.5:
