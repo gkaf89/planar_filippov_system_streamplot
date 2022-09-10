@@ -18,10 +18,10 @@ def vector_field():
 	
 	return (X,Y,Ex,Ey)
 
-def generate_stream_lines(X,Y,Ex,Ey):
+def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 	# Depict illustration
 	plt.figure(figsize=(10, 10))
-	streamlines = plt.streamplot(X, Y, Ex, Ey, density=1.4, linewidth=None, color='#A23BEC')
+	streamlines = plt.streamplot(X, Y, Ex, Ey, *argv, **kwargs)
 	line_segments = streamlines.lines.get_segments()
 	
 	segments_start = {}
@@ -160,7 +160,7 @@ def test():
 
 def main():
 	(X,Y,Ex,Ey) = vector_field()
-	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
+	stream_lines = generate_stream_lines(X,Y,Ex,Ey, density=1.4, linewidth=None, color='#A23BEC')
 	write_stream_lines("streamlines.dat", stream_lines)
 	stream_arrows = list(map(find_midpoint, stream_lines))
 	write_stream_arrows("stream_arrows.dat", stream_arrows)
