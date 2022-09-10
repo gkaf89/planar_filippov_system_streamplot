@@ -42,13 +42,13 @@ class DoublyLinkedList:
 			self.tail.prev = new_tail
 			self.tail = new_tail
 	
-	def get_front(self):
+	def front(self):
 		if self.head is None:
 			return None
 		else:
 			return self.head.data
 	
-	def get_back(self):
+	def back(self):
 		if self.tail is None:
 			return None
 		else:
@@ -133,7 +133,7 @@ def generate_stream_lines(X,Y,Ex,Ey):
 		stream_line = []
 		segment = segments_start[segment_key]
 		while not segment.empty():
-			point = segment.get_front()
+			point = segment.front()
 			stream_line.append(point)
 			segment.pop_front()
 		stream_lines.append(stream_line)
