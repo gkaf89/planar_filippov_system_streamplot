@@ -1,4 +1,3 @@
-# Import required modules
 import numpy as np
 import matplotlib.pyplot as plt
 import bitstring as btstr
@@ -165,9 +164,9 @@ def find_midpoint(line):
 	lengths = cumulative_distance(line)
 	total_length = lengths[-1]
 	
-	mid_length = total_length/2.0
+	mid_length = 0.5 * total_length
 	
-	for n in range(0,len(line)-1):
+	for n in range(0, len(line)-1):
 		if lengths[n+1] > mid_length:
 			distance = lengths[n+1] - lengths[n]
 			difference = lengths[n+1] - mid_length
@@ -181,6 +180,7 @@ def find_midpoint(line):
 				end_point_fraction = 1 - end_point_fraction
 			
 			displacement = line[n+1] - line[n]
+			
 			mid_segment = line[n] + location_fraction * displacement
 			initial_point = mid_segment - end_point_fraction * displacement
 			final_point = mid_segment + end_point_fraction * displacement
@@ -225,7 +225,6 @@ def write_stream_arrows(filename, arrows):
 			file.write("; ")
 			file.write(f"{p2[1]:.16f}")
 			file.write("\n")
-
 
 def test():
 	(X,Y,Ex,Ey) = vector_field()
