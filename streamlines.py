@@ -133,9 +133,9 @@ def generate_stream_lines(X,Y,Ex,Ey):
 		stream_line = []
 		segment = segments_start[segment_key]
 		while not segment.empty():
-			point = segment.front()
+			point = segment.back()
 			stream_line.append(point)
-			segment.pop_front()
+			segment.pop_back()
 		stream_lines.append(stream_line)
 	
 	return stream_lines
