@@ -97,14 +97,12 @@ def find_midpoint(line):
 	for n in range(0, len(line)-1):
 		if lengths[n+1] > mid_length:
 			distance = lengths[n+1] - lengths[n]
-			difference = lengths[n+1] - mid_length
+			difference = mid_length - lengths[n]
 			
 			location_fraction = difference/distance
-			location_fraction = min( 0.01, loction_fraction )
+			location_fraction = max( 0.01, location_fraction )
 			
-			end_point_fraction = location_fraction
-			if end_point_fraction > 0.5:
-				end_point_fraction = 1 - end_point_fraction
+			end_point_fraction = min( location_fraction, 1 - location_fraction )
 			
 			displacement = line[n+1] - line[n]
 			
