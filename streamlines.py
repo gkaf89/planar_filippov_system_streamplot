@@ -177,8 +177,8 @@ def find_midpoint(line):
 	
 	return None
 
-def to_gnuplot_midpoints(arrows):
-	point, location = arrows
+def to_gnuplot_midpoints(arrow):
+	point, location = arrow
 	
 	p0 = point[0,:]
 	p1 = point[1,:]
@@ -202,15 +202,43 @@ def write_stream_lines(filename, stream_lines):
 				file.write(f"{point[1]:.16f}")
 				file.write("\n")
 
+def write_stream_arrows(filename, arrows):
+	with open(filename, "w") as file:
+		separate_next_line = False
+		for arrow in arrows:
+			if not separate_next_line:
+				separate_next_line = True
+			else:
+				file.write("\n")
+				
+			p0, p1, p2 = arrow
+			file.write(f"{p0[0]:.16f}")
+			file.write("; ")
+			file.write(f"{p0[1]:.16f}")
+			file.write("; ")
+			file.write(f"{p1[0]:.16f}")
+			file.write("; ")
+			file.write(f"{p1[1]:.16f}")
+			file.write("; ")
+			file.write(f"{p2[0]:.16f}")
+			file.write("; ")
+			file.write(f"{p2[1]:.16f}")
+			file.write("\n")
+
+
 def test():
 	(X,Y,Ex,Ey) = vector_field()
 	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
-	return stream_lines
+	write_stream_lines("streamlines.dat", stream_lines)
+	stream_arrows = list(map(to_gnuplot_midpoints, map(find_midpoint, stream_lines)))
+	return stream_arrows
 
 def main():
 	(X,Y,Ex,Ey) = vector_field()
 	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
-	write_stream_lines("test.dat", stream_lines)
+	write_stream_lines("streamlines.dat", stream_lines)
+	stream_arrows = list(map(to_gnuplot_midpoints, map(find_midpoint, stream_lines)))
+	write_stream_arrows("stream_arrows.dat", stream_arrows)
 
 if __name__ == '__main__':
 	main()
