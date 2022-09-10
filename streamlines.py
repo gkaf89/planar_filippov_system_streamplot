@@ -4,19 +4,18 @@ import bitstring as btstr
 
 import datastructures as struct
 
-def vector_field():
+def phase_plane(vector_field, min_value, max_value, step):
 	# 1D arrays
-	x = np.arange(-5,5,0.1)
-	y = np.arange(-5,5,0.1)
+	x = np.arange(min_value[0], max_value[0], step[0])
+	y = np.arange(min_value[1], max_value[1], step[1])
 	
 	# Meshgrid
-	X,Y = np.meshgrid(x,y)
+	X, Y = np.meshgrid(x, y)
 	
 	# Assign vector directions
-	Ex = (X + 1)/((X+1)**2 + Y**2) - (X - 1)/((X-1)**2 + Y**2)
-	Ey = Y/((X+1)**2 + Y**2) - Y/((X-1)**2 + Y**2)
+	Ex, Ey = vector_field(X, Y)
 	
-	return (X,Y,Ex,Ey)
+	return (X, Y, Ex, Ey) 
 
 def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 	# Depict illustration
@@ -150,15 +149,11 @@ def write_stream_arrows(filename, arrows):
 			file.write(f"{p2[1]:.16f}")
 			file.write("\n")
 
-def test():
-	(X,Y,Ex,Ey) = vector_field()
-	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
-	write_stream_lines("streamlines.dat", stream_lines)
-	stream_arrows = list(map(find_midpoint, stream_lines))
-	return stream_arrows
-
 def main():
-	(X,Y,Ex,Ey) = vector_field()
+	f = lambda X, Y : ((X + 1)/((X+1)**2 + Y**2) - (X - 1)/((X-1)**2 + Y**2), Y/((X+1)**2 + Y**2) - Y/((X-1)**2 + Y**2))
+	
+	X, Y, Ex, Ey = phase_plane( f, (-5,-5), (5,5), (0.1, 0.1))
+	
 	stream_lines = generate_stream_lines(X,Y,Ex,Ey, density=1.4, linewidth=None, color='#A23BEC')
 	write_stream_lines("streamlines.dat", stream_lines)
 	stream_arrows = list(map(find_midpoint, stream_lines))
