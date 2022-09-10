@@ -171,22 +171,23 @@ def find_midpoint(line):
 		if lengths[n+1] > mid_length:
 			distance = lengths[n+1] - lengths[n]
 			difference = lengths[n+1] - mid_length
-			mid_segment = np.array([line[n], line[n+1]])
-			location = difference/distance
-			return (mid_segment, location)
+			
+			location_fraction = difference/distance
+			if location_fraction < 0.01:
+				loction_fraction = 0.01
+			
+			end_point_fraction = location_fraction
+			if end_point_fraction > 0.5:
+				end_point_fraction = 1 - end_point_fraction
+			
+			displacement = line[n+1] - line[n]
+			mid_segment = line[n] + location_fraction * displacement
+			initial_point = mid_segment - end_point_fraction * displacement
+			final_point = mid_segment + end_point_fraction * displacement
+			
+			return (initial_point, mid_segment, final_point)
 	
 	return None
-
-def to_gnuplot_midpoints(arrow):
-	point, location = arrow
-	
-	p0 = point[0,:]
-	p1 = point[1,:]
-	
-	p_mid = p0 + location*(p1 - p0)
-	
-	return (p0, p_mid, p1)
-
 
 def write_stream_lines(filename, stream_lines):
 	with open(filename, "w") as file:
@@ -230,14 +231,14 @@ def test():
 	(X,Y,Ex,Ey) = vector_field()
 	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
 	write_stream_lines("streamlines.dat", stream_lines)
-	stream_arrows = list(map(to_gnuplot_midpoints, map(find_midpoint, stream_lines)))
+	stream_arrows = list(map(find_midpoint, stream_lines))
 	return stream_arrows
 
 def main():
 	(X,Y,Ex,Ey) = vector_field()
 	stream_lines = generate_stream_lines(X,Y,Ex,Ey)
 	write_stream_lines("streamlines.dat", stream_lines)
-	stream_arrows = list(map(to_gnuplot_midpoints, map(find_midpoint, stream_lines)))
+	stream_arrows = list(map(find_midpoint, stream_lines))
 	write_stream_arrows("stream_arrows.dat", stream_arrows)
 
 if __name__ == '__main__':
