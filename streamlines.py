@@ -20,7 +20,6 @@ def vector_field():
 
 def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 	# Depict illustration
-	plt.figure(figsize=(10, 10))
 	streamlines = plt.streamplot(X, Y, Ex, Ey, *argv, **kwargs)
 	line_segments = streamlines.lines.get_segments()
 	
