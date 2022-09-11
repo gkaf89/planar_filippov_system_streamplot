@@ -5,5 +5,5 @@ set datafile separator ";"
 
 set style arrow 1 head size 0.15,15 fixed filled linestyle 1
 
-plot 'streamlines.dat' using 1:2 with line linestyle 1 notitle, \
-	'stream_arrows.dat' using 1:2:($5-$1):($6-$2) with vectors arrowstyle 1 notitle
+plot 'streamplot/streamlines.dat' using 1:2 with line linestyle 1 notitle, \
+	'streamplot/streamarrows.dat' using 1:2:($5-$1):($6-$2) with vectors arrowstyle 1 notitle

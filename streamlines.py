@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import bitstring as btstr
 
+import sys
+import os
+
 import datastructures as struct
 
 def phase_plane(vector_field, min_value, max_value, step):
@@ -113,51 +116,73 @@ def find_midpoint(line):
 	return None
 
 def write_stream_lines(filename, stream_lines):
-	with open(filename, "w") as file:
+	with open(filename, 'w') as file:
 		separate_next_line = False
 		for line in stream_lines:
 			if not separate_next_line:
 				separate_next_line = True
 			else:
-				file.write("\n")
+				file.write('\n')
 			for point in line:
-				file.write(f"{point[0]:.16f}")
-				file.write("; ")
-				file.write(f"{point[1]:.16f}")
-				file.write("\n")
+				file.write(f'{point[0]:.16f}')
+				file.write('; ')
+				file.write(f'{point[1]:.16f}')
+				file.write('\n')
 
 def write_stream_arrows(filename, arrows):
-	with open(filename, "w") as file:
+	with open(filename, 'w') as file:
 		separate_next_line = False
 		for arrow in arrows:
 			if not separate_next_line:
 				separate_next_line = True
 			else:
-				file.write("\n")
+				file.write('\n')
 				
 			p0, p1, p2 = arrow
-			file.write(f"{p0[0]:.16f}")
-			file.write("; ")
-			file.write(f"{p0[1]:.16f}")
-			file.write("; ")
-			file.write(f"{p1[0]:.16f}")
-			file.write("; ")
-			file.write(f"{p1[1]:.16f}")
-			file.write("; ")
-			file.write(f"{p2[0]:.16f}")
-			file.write("; ")
-			file.write(f"{p2[1]:.16f}")
-			file.write("\n")
+			file.write(f'{p0[0]:.16f}')
+			file.write('; ')
+			file.write(f'{p0[1]:.16f}')
+			file.write('; ')
+			file.write(f'{p1[0]:.16f}')
+			file.write('; ')
+			file.write(f'{p1[1]:.16f}')
+			file.write('; ')
+			file.write(f'{p2[0]:.16f}')
+			file.write('; ')
+			file.write(f'{p2[1]:.16f}')
+			file.write('\n')
+
+class Streamplot:
+	def __init__(self, streamlines, streamarrows):
+		self.streamlines = streamlines
+		self.streamarrows = streamarrows
+
+def create_streamplot(vector_field, min_value, max_value, step, *argv, **kwargs):
+	X,Y,Ex,Ey = phase_plane(vector_field, min_value, max_value, step)
+	stream_lines = generate_stream_lines(X,Y,Ex,Ey, *argv, **kwargs) 
+	stream_arrows = list(map(find_midpoint, stream_lines))
+	return Streamplot(stream_lines, stream_arrows)
+
+def write_streamplot(directory, streamplot):
+	try:
+		os.mkdir(directory)
+	except FileExistsError as err:
+		print('The directory provided already exists.')
+		sys.exit('Program terminating.')
+	except FileNotFoundError as err:
+		print('Parent directory does not exist.')
+		sys.exit('Program terminating.')
+	
+	streamlines_file = os.path.join(directory, 'streamlines.dat')
+	write_stream_lines(str(streamlines_file), streamplot.streamlines)
+
+	streamarrows_file = os.path.join(directory, 'streamarrows.dat')
+	write_stream_arrows(str(streamarrows_file), streamplot.streamarrows)
 
 def main():
 	f = lambda X, Y : ((X + 1)/((X+1)**2 + Y**2) - (X - 1)/((X-1)**2 + Y**2), Y/((X+1)**2 + Y**2) - Y/((X-1)**2 + Y**2))
-	
-	X, Y, Ex, Ey = phase_plane( f, (-5,-5), (5,5), (0.1, 0.1))
-	
-	stream_lines = generate_stream_lines(X,Y,Ex,Ey, density=1.4, linewidth=None, color='#A23BEC')
-	write_stream_lines("streamlines.dat", stream_lines)
-	stream_arrows = list(map(find_midpoint, stream_lines))
-	write_stream_arrows("stream_arrows.dat", stream_arrows)
+	streamplot = create_streamplot( f, (-5,-5), (5,5), (0.1, 0.1), density=1.4)
+	write_streamplot('streamplot', streamplot)
 
 if __name__ == '__main__':
 	main()
