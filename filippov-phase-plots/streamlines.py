@@ -86,7 +86,13 @@ def cumulative_distance(line):
 	
 	return lengths
 
-def find_midpoint(line):
+def _ensure_minimum_edge_separation(location_fraction, min_edge_fraction):
+	location_fraction = max( min_edge_fraction, location_fraction )
+	location_fraction = min( 1 - min_edge_fraction, location_fraction )
+	
+	return location_fraction
+
+def find_midpoint(line, min_edge_fraction = 0.01):
 	if len(line) < 2:
 		return None
 	
@@ -101,7 +107,7 @@ def find_midpoint(line):
 			difference = mid_length - lengths[n]
 			
 			location_fraction = difference/distance
-			location_fraction = max( 0.01, location_fraction )
+			location_fraction = _ensure_minimum_edge_separation(location_fraction, min_edge_fraction)
 			
 			end_point_fraction = min( location_fraction, 1 - location_fraction )
 			
@@ -175,7 +181,7 @@ def write_streamplot(directory, streamplot):
 	
 	streamlines_file = os.path.join(directory, 'streamlines.dat')
 	write_stream_lines(str(streamlines_file), streamplot.streamlines)
-
+	
 	streamarrows_file = os.path.join(directory, 'streamarrows.dat')
 	write_stream_arrows(str(streamarrows_file), streamplot.streamarrows)
 
