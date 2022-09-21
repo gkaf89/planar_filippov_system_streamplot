@@ -1,5 +1,5 @@
 import numpy as np
-import streamlines as slines
+import piecewise_smooth_streamlines.streamlines as slines
 
 class FilipovPlanarField:
 	def __init__(self, vector_field_0, vector_field_1, manifold):
@@ -32,11 +32,11 @@ class FilipovPlanarField:
 		for x in range(nx):
 			for y in range(ny):
 				if S(x,y) > 0:
-					Fx(x,y) = Fx_0(x,y)
-					Fy(x,y) = Fy_0(x,y)
+					Fx[x,y] = Fx_0[x,y]
+					Fy[x,y] = Fy_0[x,y]
 				else:
-					Fx(x,y) = Fx_1(x,y)
-					Fy(x,y) = Fy_1(x,y)
+					Fx[x,y] = Fx_1[x,y]
+					Fy[x,y] = Fy_1[x,y]
 		
 		return (X, Y, Fx, Fy)
 

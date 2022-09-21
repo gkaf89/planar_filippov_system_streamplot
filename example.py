@@ -1,5 +1,5 @@
-import filippov-phase-plots.filipov-planar-field as filipov
-import filippov-phase-plots.streamlines as streamlines
+import piecewise_smooth_streamlines.piecewise_smooth_field as pws
+import piecewise_smooth_streamlines.streamlines as streamlines
 
 def bridge_converter(L, C, n, v_in, R):
 	def converter_controller(u):
@@ -23,9 +23,14 @@ def main():
 	controller = bridge_converter(L, C, n, v_in, R)
 	vector_field_0 = controller([0,1,1,0])
 	vector_field_1 = controller([1,0,0,1])
-	manifold = lambda x : 2*x(0) + 3*x(1) + 1
 	
-	filipov.FilipovPlanarField(vector_field_0, vector_field_1, manifold)
+	i_out = n*(v_out/v_in)*(n*v_out + v_in)/R
+	u_out = n*v_out/(n*v_out + v_in)
+	alpha= 1/2
+	
+	manifold = lambda x : (1/(n*C))*(1-u_out)*x(0) + (alpha - 1/(R*C))*x(1) - alpha*v_out
+	
+	pws.FilipovPlanarField(vector_field_0, vector_field_1, manifold)
 
 if __name__ == '__main__':
 	main()
