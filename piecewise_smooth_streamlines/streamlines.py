@@ -5,7 +5,7 @@ import bitstring as btstr
 import sys
 import os
 
-import piecewise_smooth_streamlines.datastructures as struct
+import datastructures as struct
 
 def phase_plane(vector_field, min_value, max_value, step):
 	# 1D arrays

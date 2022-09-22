@@ -1,5 +1,5 @@
 import numpy as np
-import piecewise_smooth_streamlines.streamlines as slines
+import streamlines
 
 class FilipovPlanarField:
 	def __init__(self, vector_field_0, vector_field_1, manifold):
