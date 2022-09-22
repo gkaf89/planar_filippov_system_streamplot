@@ -69,7 +69,7 @@ def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 	
 	return stream_lines
 
-def cumulative_distance(line):
+def _cumulative_distance(line):
 	cumulative_length = 0.0
 	lengths = []
 	previous_point = None
@@ -96,7 +96,7 @@ def find_midpoint(line, min_edge_fraction = 0.01):
 	if len(line) < 2:
 		return None
 	
-	lengths = cumulative_distance(line)
+	lengths = _cumulative_distance(line)
 	total_length = lengths[-1]
 	
 	mid_length = 0.5 * total_length
