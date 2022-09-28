@@ -46,7 +46,7 @@ def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 			segment_positioned = True
 		if key_point_end in segments_start:
 			extendable_segment = segments_start.pop(key_point_end)
-			extendable_segment.push_back(segment)
+			extendable_segment.push_back(end_point)
 			segments_start[key_point_start] = extendable_segment
 			segment_positioned = True
 
