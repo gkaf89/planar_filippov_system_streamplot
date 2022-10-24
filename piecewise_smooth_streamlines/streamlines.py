@@ -20,6 +20,11 @@ def phase_plane_grid(vector_field, min_value, max_value, step):
 
 	return (X, Y, Ex, Ey)
 
+def to_key(point):
+	c0 = btstr.BitArray(float=point[0], length=64).hex
+	c1 = btstr.BitArray(float=point[1], length=64).hex
+	return (c0, c1)
+
 def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 	# Depict illustration
 	streamlines = plt.streamplot(X, Y, Ex, Ey, *argv, **kwargs)
@@ -29,33 +34,39 @@ def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 	segments_end = {}
 	for segment in line_segments:
 		start_point = segment[0,:]
-		c0 = btstr.BitArray(float=start_point[0], length=64).hex
-		c1 = btstr.BitArray(float=start_point[1], length=64).hex
-		key_point_start = (c0, c1)
+		key_point_start = to_key(start_point)
 
 		end_point = segment[1,:]
-		c0 = btstr.BitArray(float=end_point[0], length=64).hex
-		c1 = btstr.BitArray(float=end_point[1], length=64).hex
-		key_point_end = (c0, c1)
+		key_point_end = to_key(end_point)
 
-		segment_positioned = False
 		if key_point_start in segments_end:
 			extendable_segment = segments_end.pop(key_point_start)
-			extendable_segment.push_front(start_point)
+			extendable_segment.push_front(end_point)
+			if key_point_end in segments_start:
+				further_extendable_segment = segments_start.pop(key_point_end)
+				extendable_segment.append_back(further_extendable_segment)
+				key_point_start = to_key(extendable_segment.front())
+				segments_start[key_point_start] = extendable_segment
+				key_point_end = to_key(extendable_segment.back())
 			segments_end[key_point_end] = extendable_segment
-			segment_positioned = True
-		if key_point_end in segments_start:
+		elif key_point_end in segments_start:
 			extendable_segment = segments_start.pop(key_point_end)
-			extendable_segment.push_back(end_point)
+			extendable_segment.push_back(start_point)
+			if key_point_start in segments_end:
+				further_extendable_segment = segments_end.pop(key_point_start)
+				extendable_segment.append_front(further_extendable_segment)
+				key_point_end = to_key(extendable_segment.back())
+				segments_end[key_point_end] = extendable_segment
+				key_point_start = to_key(extendable_segment.front())
 			segments_start[key_point_start] = extendable_segment
-			segment_positioned = True
-
-		if not segment_positioned:
+		else:
 			extendable_segment = struct.Dequeue()
 			extendable_segment.push_front(end_point)
 			extendable_segment.push_back(start_point)
 			segments_end[key_point_end] = extendable_segment
 			segments_start[key_point_start] = extendable_segment
+
+
 
 	stream_lines = []
 	for segment_key in segments_start:
@@ -118,7 +129,6 @@ def _find_midpoint(line, min_edge_fraction = 0.01):
 			final_point = mid_segment + end_point_fraction * displacement
 
 			return (initial_point, mid_segment, final_point)
-
 	return None
 
 def generate_stream_arrows(stream_lines):

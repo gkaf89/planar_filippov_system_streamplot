@@ -1,6 +1,8 @@
 import numpy as np
 import streamlines as streamlines
 
+import matplotlib.pyplot as plt
+
 class Meshgrid:
 	def __init__(self, X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S):
 		self.__X = X
@@ -15,6 +17,27 @@ class Meshgrid:
 		stream_lines_0 = streamlines.generate_stream_lines(self.__X, self.__Y, self.__Fx_0, self.__Fy_0, *args, **kwargs)
 		stream_lines_1 = streamlines.generate_stream_lines(self.__X, self.__Y, self.__Fx_1, self.__Fy_1, *args, **kwargs)
 		return (stream_lines_0, stream_lines_1)
+
+	def test_plot(self):
+		plt.figure(figsize=(10, 10))
+		plt.streamplot(self.__X, self.__Y, self.__Fx_0, self.__Fy_0, density=1.4, linewidth=None, color='#A23BEC')
+		plt.plot(-1,0,'-or')
+		plt.plot(1,0,'-og')
+		plt.title('Field 0')
+
+		# Show plot with grid
+		plt.grid()
+		plt.show()
+
+		plt.figure(figsize=(10, 10))
+		plt.streamplot(self.__X, self.__Y, self.__Fx_1, self.__Fy_1, density=1.4, linewidth=None, color='#A23BEC')
+		plt.plot(-1,0,'-or')
+		plt.plot(1,0,'-og')
+		plt.title('Field 1')
+
+		# Show plot with grid
+		plt.grid()
+		plt.show()
 
 class PiecewiseSmoothBifield:
 	def __init__(self, vector_field_0, vector_field_1, manifold):
@@ -52,7 +75,7 @@ class PiecewiseSmoothBifield:
 
 		return (stream_lines_0, stream_lines_1)
 
-	@classmethod
+	@staticmethod
 	def filter_phase_planes(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S):
 		nx, ny = S.shape
 

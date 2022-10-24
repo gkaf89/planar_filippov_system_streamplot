@@ -4,11 +4,11 @@ class _Node:
 		self.prev = prev
 		self.next = next
 	
-	@classmethod
+	@staticmethod
 	def empty():
 		return _Node(None, None, None)
 	
-	@classmethod
+	@staticmethod
 	def create(data, prev, next):
 		return _Node(data, prev, next)
 
@@ -27,8 +27,8 @@ class Dequeue:
 			n = n + 1
 			current = current.prev
 		
-		return n 
-	
+		return n
+
 	def push_front(self, data):
 		if self.__head is None:
 			self.__head = _Node(data, None, None)
@@ -57,7 +57,7 @@ class Dequeue:
 		if self.__tail is None:
 			return None
 		else:
-			return self.__tail.data 
+			return self.__tail.data
 	
 	def pop_front(self):
 		if self.__head is None:
@@ -80,6 +80,18 @@ class Dequeue:
 			else:
 				self.__head = None
 			self.__tail = new_tail
+	
+	def append_front(self, other):
+		self.__head.next = other.__tail
+		other.__tail.prev = self.__head
+		
+		self.__head = other.__head
+	
+	def append_back(self, other):
+		self.__tail.prev = other.__head
+		other.__head.next = self.__tail
+		
+		self.__tail = other.__tail
 
 def main():
 	test_results = []
