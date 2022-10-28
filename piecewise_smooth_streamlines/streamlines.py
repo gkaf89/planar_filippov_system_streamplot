@@ -169,7 +169,6 @@ def write_stream_arrows(filename, arrows):
 			file.write(f'{p2[0]:.16f}')
 			file.write('; ')
 			file.write(f'{p2[1]:.16f}')
-			file.write('\n')
 
 class Streamplot:
 	def __init__(self, streamlines, streamarrows):
