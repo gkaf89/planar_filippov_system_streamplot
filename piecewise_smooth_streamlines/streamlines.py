@@ -11,16 +11,16 @@ def phase_plane_grid(vector_field, min_value, max_value, step):
 	# 1D arrays
 	x = np.arange(min_value[0], max_value[0], step[0])
 	y = np.arange(min_value[1], max_value[1], step[1])
-
+	
 	# Meshgrid
 	X, Y = np.meshgrid(x, y)
-
+	
 	# Assign vector directions
 	Ex, Ey = vector_field(X, Y)
-
+	
 	return (X, Y, Ex, Ey)
 
-def to_key(point):
+def point_to_key(point):
 	c0 = btstr.BitArray(float=point[0], length=64).hex
 	c1 = btstr.BitArray(float=point[1], length=64).hex
 	return (c0, c1)
@@ -29,25 +29,25 @@ def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 	# Depict illustration
 	streamlines = plt.streamplot(X, Y, Ex, Ey, *argv, **kwargs)
 	line_segments = streamlines.lines.get_segments()
-
+	
 	segments_start = {}
 	segments_end = {}
 	for segment in line_segments:
 		start_point = segment[0,:]
-		key_point_start = to_key(start_point)
-
+		key_point_start = point_to_key(start_point)
+		
 		end_point = segment[1,:]
-		key_point_end = to_key(end_point)
-
+		key_point_end = point_to_key(end_point)
+		
 		if key_point_start in segments_end:
 			extendable_segment = segments_end.pop(key_point_start)
 			extendable_segment.push_front(end_point)
 			if key_point_end in segments_start:
 				further_extendable_segment = segments_start.pop(key_point_end)
 				extendable_segment.append_back(further_extendable_segment)
-				key_point_start = to_key(extendable_segment.front())
+				key_point_start = point_to_key(extendable_segment.front())
 				segments_start[key_point_start] = extendable_segment
-				key_point_end = to_key(extendable_segment.back())
+				key_point_end = point_to_key(extendable_segment.back())
 			segments_end[key_point_end] = extendable_segment
 		elif key_point_end in segments_start:
 			extendable_segment = segments_start.pop(key_point_end)
@@ -55,9 +55,9 @@ def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 			if key_point_start in segments_end:
 				further_extendable_segment = segments_end.pop(key_point_start)
 				extendable_segment.append_front(further_extendable_segment)
-				key_point_end = to_key(extendable_segment.back())
+				key_point_end = point_to_key(extendable_segment.back())
 				segments_end[key_point_end] = extendable_segment
-				key_point_start = to_key(extendable_segment.front())
+				key_point_start = point_to_key(extendable_segment.front())
 			segments_start[key_point_start] = extendable_segment
 		else:
 			extendable_segment = struct.Dequeue()
@@ -65,9 +65,7 @@ def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 			extendable_segment.push_back(start_point)
 			segments_end[key_point_end] = extendable_segment
 			segments_start[key_point_start] = extendable_segment
-
-
-
+	
 	stream_lines = []
 	for segment_key in segments_start:
 		stream_line = []
@@ -84,13 +82,13 @@ def _cumulative_distance(line):
 	cumulative_length = 0.0
 	lengths = []
 	previous_point = None
-
+	
 	for point in line:
 		if previous_point is None:
 			distance = 0.0
 		else:
 			distance = np.linalg.norm(point - previous_point)
-
+		
 		cumulative_length = cumulative_length + distance
 		lengths.append(cumulative_length)
 		previous_point = point
@@ -100,34 +98,34 @@ def _cumulative_distance(line):
 def _ensure_minimum_edge_separation(location_fraction, min_edge_fraction):
 	location_fraction = max( min_edge_fraction, location_fraction )
 	location_fraction = min( 1 - min_edge_fraction, location_fraction )
-
+	
 	return location_fraction
 
 def _find_midpoint(line, min_edge_fraction = 0.01):
 	if len(line) < 2:
 		return None
-
+	
 	lengths = _cumulative_distance(line)
 	total_length = lengths[-1]
-
+	
 	mid_length = 0.5 * total_length
-
+	
 	for n in range(0, len(line)-1):
 		if lengths[n+1] > mid_length:
 			distance = lengths[n+1] - lengths[n]
 			difference = mid_length - lengths[n]
-
+			
 			location_fraction = difference/distance
 			location_fraction = _ensure_minimum_edge_separation(location_fraction, min_edge_fraction)
-
+			
 			end_point_fraction = min( location_fraction, 1 - location_fraction )
-
+			
 			displacement = line[n+1] - line[n]
-
+			
 			mid_segment = line[n] + location_fraction * displacement
 			initial_point = mid_segment - end_point_fraction * displacement
 			final_point = mid_segment + end_point_fraction * displacement
-
+			
 			return (initial_point, mid_segment, final_point)
 	return None
 
@@ -156,7 +154,7 @@ def write_stream_arrows(filename, arrows):
 				separate_next_line = True
 			else:
 				file.write('\n')
-
+			
 			p0, p1, p2 = arrow
 			file.write(f'{p0[0]:.16f}')
 			file.write('; ')
@@ -190,10 +188,10 @@ def write_streamplot(directory, streamplot):
 	except FileNotFoundError as err:
 		print('Parent directory does not exist.')
 		sys.exit('Program terminating.')
-
+	
 	streamlines_file = os.path.join(directory, 'streamlines.dat')
 	write_stream_lines(str(streamlines_file), streamplot.streamlines)
-
+	
 	streamarrows_file = os.path.join(directory, 'streamarrows.dat')
 	write_stream_arrows(str(streamarrows_file), streamplot.streamarrows)
 

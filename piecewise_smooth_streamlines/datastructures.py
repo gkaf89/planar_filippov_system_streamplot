@@ -28,7 +28,7 @@ class Dequeue:
 			current = current.prev
 		
 		return n
-
+	
 	def push_front(self, data):
 		if self.__head is None:
 			self.__head = _Node(data, None, None)
