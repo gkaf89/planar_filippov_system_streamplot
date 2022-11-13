@@ -7,6 +7,70 @@ import os
 
 import datastructures as struct
 
+class LineKeys:
+	def __init__(self):
+		self.begin = {}
+		self.end = {}
+	
+	def insert(self, k):
+		k_begin, k_end = k
+		self.begin[k_begin] = k
+		self.end[k_end] = k
+	
+	def pop_front(self, k_end):
+		k = self.begin.pop(k_end)
+		self.begin.pop(k[0])
+		return k
+	
+	def pop_back(self, k_begin):
+		k = self.end.pop(k_begin)
+		self.end.pop(k[1])
+		return k
+	
+	def get_front_keys(self):
+		return self.begin
+	
+	def get_back_keys(self):
+		return self.end
+
+class Lines:
+	def __init__(self):
+		self.line_keys = LineKeys()
+		self.begin = {}
+		self.end = {}
+	
+	def insert(self, k, line):
+		self.line_keys.insert(k)
+		
+		k_begin, k_end = k
+		
+		self.begin[k_begin] = line
+		self.end[k_end] = line
+	
+	def pop_front(self, k_begin):
+		k = self.line_keys.pop_front(k_begin)
+		line = self.begin.pop(k[0])
+		
+		k_end = k[1]
+		self.end.pop(k_end)
+		
+		return (k, line)
+	
+	def pop_back(self, k_end):
+		k = self.line_keys.pop_back(k_end)
+		line = self.end.pop(k[1])
+		
+		k_begin = k[0]
+		self.begin.pop(k_begin)
+		
+		return (k, line)
+	
+	def get_front_list(self):
+		return (self.line_keys.get_front_keys(), self.begin())
+	
+	def get_back_list(self):
+		return (self.line_keys.get_back_keys(), self.end())
+
 def phase_plane_grid(vector_field, min_value, max_value, step):
 	# 1D arrays
 	x = np.arange(min_value[0], max_value[0], step[0])
@@ -25,56 +89,67 @@ def point_to_key(point):
 	c1 = btstr.BitArray(float=point[1], length=64).hex
 	return (c0, c1)
 
+def segment_to_key(segment):
+	k_begin = point_to_key(segment[0,:])
+	k_end = point_to_key(segment[1,:])
+	
+	return (k_begin, k_end)
+
+def process_segment(lines, segment):
+	k = segment_to_key(segment)
+	k_begin, k_end = k
+	
+	if k_end in lines.begin:
+		if k_begin in lines.end:
+			key_back, line_back = lines.pop_front(k_end)
+			key_front, line_front = lines.pop_back(k_begin)
+			line_front.append_back(line_back)
+			lines.insert((key_front[0], key_back[1]), line_front)
+		else:
+			line_key, line = lines.pop_front(k_end)
+			line.append_front(segment[0,:])
+			lines.insert((k_begin, line_key[1]), line)
+	elif k_begin in lines.end:
+		if k_end in lines.begin:
+			key_front, line_front = lines.pop_back(k_begin)
+			key_back, line_back = lines.pop_front(k_end)
+			line_front.append_back(line_end)
+			lines.insert((key_front[0], key_back[1]), line_front)
+		else:
+			line_key, line = lines.pop_back(k_begin)
+			line.append_back(segment[1,:])
+			lines.insert((line_key[0], k_end), line)
+	else:
+		line = struct.Dequeue()
+		line.push_front(segment[0,:])
+		line.push_back(segment[1,:])
+		lines.insert(k, line)
+
+def lines_to_list(lines):
+	keys, lines = get_front_list(self)
+	
+	stream_lines = []
+	for line_key in keys:
+		stream_line = []
+		line = lines[line_key]
+		while not line.empty():
+			point = line.back()
+			stream_line.append(point)
+			line.pop_back()
+		stream_lines.append(stream_line)
+	
+	return stream_line
+
 def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 	# Depict illustration
 	streamlines = plt.streamplot(X, Y, Ex, Ey, *argv, **kwargs)
 	line_segments = streamlines.lines.get_segments()
 	
-	segments_start = {}
-	segments_end = {}
+	lines = Lines()
 	for segment in line_segments:
-		start_point = segment[0,:]
-		key_point_start = point_to_key(start_point)
-		
-		end_point = segment[1,:]
-		key_point_end = point_to_key(end_point)
-		
-		if key_point_start in segments_end:
-			extendable_segment = segments_end.pop(key_point_start)
-			extendable_segment.push_front(end_point)
-			if key_point_end in segments_start:
-				further_extendable_segment = segments_start.pop(key_point_end)
-				extendable_segment.append_back(further_extendable_segment)
-				key_point_start = point_to_key(extendable_segment.front())
-				segments_start[key_point_start] = extendable_segment
-				key_point_end = point_to_key(extendable_segment.back())
-			segments_end[key_point_end] = extendable_segment
-		elif key_point_end in segments_start:
-			extendable_segment = segments_start.pop(key_point_end)
-			extendable_segment.push_back(start_point)
-			if key_point_start in segments_end:
-				further_extendable_segment = segments_end.pop(key_point_start)
-				extendable_segment.append_front(further_extendable_segment)
-				key_point_end = point_to_key(extendable_segment.back())
-				segments_end[key_point_end] = extendable_segment
-				key_point_start = point_to_key(extendable_segment.front())
-			segments_start[key_point_start] = extendable_segment
-		else:
-			extendable_segment = struct.Dequeue()
-			extendable_segment.push_front(end_point)
-			extendable_segment.push_back(start_point)
-			segments_end[key_point_end] = extendable_segment
-			segments_start[key_point_start] = extendable_segment
+		process_segment(lines, segment)
 	
-	stream_lines = []
-	for segment_key in segments_start:
-		stream_line = []
-		segment = segments_start[segment_key]
-		while not segment.empty():
-			point = segment.back()
-			stream_line.append(point)
-			segment.pop_back()
-		stream_lines.append(stream_line)
+	stream_lines = lines_to_list(lines)
 
 	return stream_lines
 
