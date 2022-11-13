@@ -47,21 +47,17 @@ class Lines:
 		self.begin[k_begin] = line
 		self.end[k_end] = line
 	
-	def pop_front(self, k_begin):
-		k = self.line_keys.pop_front(k_begin)
+	def pop_front(self, k_end):
+		k = self.line_keys.pop_front(k_end)
 		line = self.begin.pop(k[0])
-		
-		k_end = k[1]
-		self.end.pop(k_end)
+		self.end.pop(k[1])
 		
 		return (k, line)
 	
-	def pop_back(self, k_end):
-		k = self.line_keys.pop_back(k_end)
+	def pop_back(self, k_begin):
+		k = self.line_keys.pop_back(k_begin)
 		line = self.end.pop(k[1])
-		
-		k_begin = k[0]
-		self.begin.pop(k_begin)
+		self.begin.pop(k[0])
 		
 		return (k, line)
 	
@@ -98,6 +94,9 @@ def segment_to_key(segment):
 def process_segment(lines, segment):
 	k = segment_to_key(segment)
 	k_begin, k_end = k
+	
+	if k_begin == k_end:
+		return
 	
 	if k_end in lines.begin:
 		if k_begin in lines.end:
