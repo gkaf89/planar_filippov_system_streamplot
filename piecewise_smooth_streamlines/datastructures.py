@@ -21,7 +21,7 @@ class Dequeue:
 		return (self.__head is None) and (self.__tail is None)
 	
 	def size(self):
-		current = sefl.__head
+		current = self.__head
 		n = 0
 		while current is not None:
 			n = n + 1

@@ -19,12 +19,12 @@ class LineKeys:
 	
 	def pop_front(self, k_end):
 		k = self.begin.pop(k_end)
-		self.begin.pop(k[0])
+		self.end.pop(k[1])
 		return k
 	
 	def pop_back(self, k_begin):
 		k = self.end.pop(k_begin)
-		self.end.pop(k[1])
+		self.begin.pop(k[0])
 		return k
 	
 	def get_front_keys(self):
@@ -66,10 +66,10 @@ class Lines:
 		return (k, line)
 	
 	def get_front_list(self):
-		return (self.line_keys.get_front_keys(), self.begin())
+		return (self.line_keys.get_front_keys(), self.begin)
 	
 	def get_back_list(self):
-		return (self.line_keys.get_back_keys(), self.end())
+		return (self.line_keys.get_back_keys(), self.end)
 
 def phase_plane_grid(vector_field, min_value, max_value, step):
 	# 1D arrays
@@ -107,7 +107,7 @@ def process_segment(lines, segment):
 			lines.insert((key_front[0], key_back[1]), line_front)
 		else:
 			line_key, line = lines.pop_front(k_end)
-			line.append_front(segment[0,:])
+			line.push_front(segment[0,:])
 			lines.insert((k_begin, line_key[1]), line)
 	elif k_begin in lines.end:
 		if k_end in lines.begin:
@@ -117,7 +117,7 @@ def process_segment(lines, segment):
 			lines.insert((key_front[0], key_back[1]), line_front)
 		else:
 			line_key, line = lines.pop_back(k_begin)
-			line.append_back(segment[1,:])
+			line.push_back(segment[1,:])
 			lines.insert((line_key[0], k_end), line)
 	else:
 		line = struct.Dequeue()
@@ -125,20 +125,20 @@ def process_segment(lines, segment):
 		line.push_back(segment[1,:])
 		lines.insert(k, line)
 
-def lines_to_list(lines):
-	keys, lines = get_front_list(self)
+def lines_to_list(line_segments):
+	keys, lines = line_segments.get_front_list()
 	
 	stream_lines = []
 	for line_key in keys:
 		stream_line = []
 		line = lines[line_key]
 		while not line.empty():
-			point = line.back()
+			point = line.front()
 			stream_line.append(point)
-			line.pop_back()
+			line.pop_front()
 		stream_lines.append(stream_line)
 	
-	return stream_line
+	return stream_lines
 
 def segments_to_streamlines(segments):
 	lines = Lines()
@@ -279,6 +279,17 @@ def main():
 	f = lambda X, Y : ((X + 1)/((X+1)**2 + Y**2) - (X - 1)/((X-1)**2 + Y**2), Y/((X+1)**2 + Y**2) - Y/((X-1)**2 + Y**2))
 	streamplot = create_streamplot( f, (-5,-5), (5,5), (0.1, 0.1), density=1.4)
 	write_streamplot('streamplot', streamplot)
+
+def test():
+	streamline_segments = [
+		np.array([[1.0, 0.0], [2.0, 0.0]]),
+		np.array([[2.0, 0.0], [3.0, 0.0]]),
+		np.array([[0.0, 0.0], [1.0, 0.0]]),
+		np.array([[0.0, 1.0], [1.0, 1.0]]),
+		np.array([[1.0, 1.0], [2.0, 1.0]]),
+		np.array([[2.0, 1.0], [3.0, 1.0]])
+		]
+	stream_lines = segments_to_streamlines(streamline_segments)
 
 if __name__ == '__main__':
 	main()
