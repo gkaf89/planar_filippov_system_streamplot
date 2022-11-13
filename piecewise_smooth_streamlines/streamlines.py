@@ -140,16 +140,21 @@ def lines_to_list(lines):
 	
 	return stream_line
 
+def segments_to_streamlines(segments):
+	lines = Lines()
+	for segment in segments:
+		process_segment(lines, segment)
+	
+	stream_lines = lines_to_list(lines)
+	
+	return stream_lines
+
 def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 	# Depict illustration
 	streamlines = plt.streamplot(X, Y, Ex, Ey, *argv, **kwargs)
 	line_segments = streamlines.lines.get_segments()
 	
-	lines = Lines()
-	for segment in line_segments:
-		process_segment(lines, segment)
-	
-	stream_lines = lines_to_list(lines)
+	stream_lines = segments_to_streamlines(line_segments)
 
 	return stream_lines
 
