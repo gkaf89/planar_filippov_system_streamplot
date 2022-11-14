@@ -95,9 +95,6 @@ def process_segment(lines, segment):
 	k = segment_to_key(segment)
 	k_begin, k_end = k
 	
-	if k_begin == k_end:
-		return
-	
 	if k_end in lines.begin:
 		if k_begin in lines.end:
 			key_back, line_back = lines.pop_front(k_end)
@@ -139,9 +136,15 @@ def lines_to_list(line_segments):
 	
 	return stream_lines
 
+def is_singular(segment):
+	k_begin, k_end = segment_to_key(segment)
+	return k_begin == k_end
+
 def segments_to_streamlines(segments):
+	non_singular_segments = filter(lambda segment : not(is_singular(segment)), segments)
+	
 	lines = Lines()
-	for segment in segments:
+	for segment in non_singular_segments:
 		process_segment(lines, segment)
 	
 	stream_lines = lines_to_list(lines)
