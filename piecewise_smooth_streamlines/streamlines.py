@@ -9,63 +9,69 @@ import datastructures as struct
 
 class LineKeys:
 	def __init__(self):
-		self.begin = {}
-		self.end = {}
+		self.__begin = {}
+		self.__end = {}
 	
 	def insert(self, k):
 		k_begin, k_end = k
-		self.begin[k_begin] = k
-		self.end[k_end] = k
+		self.__begin[k_begin] = k
+		self.__end[k_end] = k
 	
 	def pop_front(self, k_end):
-		k = self.begin.pop(k_end)
-		self.end.pop(k[1])
+		k = self.__begin.pop(k_end)
+		self.__end.pop(k[1])
 		return k
 	
 	def pop_back(self, k_begin):
-		k = self.end.pop(k_begin)
-		self.begin.pop(k[0])
+		k = self.__end.pop(k_begin)
+		self.__begin.pop(k[0])
 		return k
 	
 	def get_front_keys(self):
-		return self.begin
+		return self.__begin
 	
 	def get_back_keys(self):
-		return self.end
+		return self.__end
 
 class Lines:
 	def __init__(self):
 		self.line_keys = LineKeys()
-		self.begin = {}
-		self.end = {}
+		self.__begin = {}
+		self.__end = {}
 	
 	def insert(self, k, line):
 		self.line_keys.insert(k)
 		
 		k_begin, k_end = k
 		
-		self.begin[k_begin] = line
-		self.end[k_end] = line
+		self.__begin[k_begin] = line
+		self.__end[k_end] = line
 	
 	def pop_front(self, k_end):
 		k = self.line_keys.pop_front(k_end)
-		line = self.begin.pop(k[0])
-		self.end.pop(k[1])
+		line = self.__begin.pop(k[0])
+		self.__end.pop(k[1])
 		
 		return (k, line)
 	
 	def pop_back(self, k_begin):
 		k = self.line_keys.pop_back(k_begin)
-		line = self.end.pop(k[1])
-		self.begin.pop(k[0])
+		line = self.__end.pop(k[1])
+		self.__begin.pop(k[0])
 		
 		return (k, line)
 	
 	def get_front_list(self):
-		return (self.line_keys.get_front_keys(), self.begin)
+		return (self.line_keys.get_front_keys(), self.__begin)
 	
 	def get_back_list(self):
-		return (self.line_keys.get_back_keys(), self.end)
+		return (self.line_keys.get_back_keys(), self.__end)
+	
+	def exists_line_begining_with(self, key):
+		return key in self.line_keys.get_front_keys()
+	
+	def exists_line_ending_with(self, key):
+		return key in self.line_keys.get_back_keys()
 
 def phase_plane_grid(vector_field, min_value, max_value, step):
 	# 1D arrays
@@ -95,8 +101,8 @@ def process_segment(lines, segment):
 	k = segment_to_key(segment)
 	k_begin, k_end = k
 	
-	if k_end in lines.begin:
-		if k_begin in lines.end:
+	if lines.exists_line_begining_with(k_end):
+		if lines.exists_line_ending_with(k_begin):
 			key_back, line_back = lines.pop_front(k_end)
 			key_front, line_front = lines.pop_back(k_begin)
 			line_front.append_back(line_back)
@@ -105,16 +111,10 @@ def process_segment(lines, segment):
 			line_key, line = lines.pop_front(k_end)
 			line.push_front(segment[0,:])
 			lines.insert((k_begin, line_key[1]), line)
-	elif k_begin in lines.end:
-		if k_end in lines.begin:
-			key_front, line_front = lines.pop_back(k_begin)
-			key_back, line_back = lines.pop_front(k_end)
-			line_front.append_back(line_end)
-			lines.insert((key_front[0], key_back[1]), line_front)
-		else:
-			line_key, line = lines.pop_back(k_begin)
-			line.push_back(segment[1,:])
-			lines.insert((line_key[0], k_end), line)
+	elif lines.exists_line_ending_with(k_begin):
+		line_key, line = lines.pop_back(k_begin)
+		line.push_back(segment[1,:])
+		lines.insert((line_key[0], k_end), line)
 	else:
 		line = struct.Dequeue()
 		line.push_front(segment[0,:])
