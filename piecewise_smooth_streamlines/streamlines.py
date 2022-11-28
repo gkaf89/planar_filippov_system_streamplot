@@ -35,12 +35,12 @@ class LineKeys:
 
 class Lines:
 	def __init__(self):
-		self.line_keys = LineKeys()
+		self.__line_keys = LineKeys()
 		self.__begin = {}
 		self.__end = {}
 	
 	def insert(self, k, line):
-		self.line_keys.insert(k)
+		self.__line_keys.insert(k)
 		
 		k_begin, k_end = k
 		
@@ -48,30 +48,30 @@ class Lines:
 		self.__end[k_end] = line
 	
 	def pop_front(self, k_end):
-		k = self.line_keys.pop_front(k_end)
+		k = self.__line_keys.pop_front(k_end)
 		line = self.__begin.pop(k[0])
 		self.__end.pop(k[1])
 		
 		return (k, line)
 	
 	def pop_back(self, k_begin):
-		k = self.line_keys.pop_back(k_begin)
+		k = self.__line_keys.pop_back(k_begin)
 		line = self.__end.pop(k[1])
 		self.__begin.pop(k[0])
 		
 		return (k, line)
 	
 	def get_front_list(self):
-		return (self.line_keys.get_front_keys(), self.__begin)
+		return (self.__line_keys.get_front_keys(), self.__begin)
 	
 	def get_back_list(self):
-		return (self.line_keys.get_back_keys(), self.__end)
+		return (self.__line_keys.get_back_keys(), self.__end)
 	
 	def exists_line_begining_with(self, key):
-		return key in self.line_keys.get_front_keys()
+		return key in self.__line_keys.get_front_keys()
 	
 	def exists_line_ending_with(self, key):
-		return key in self.line_keys.get_back_keys()
+		return key in self.__line_keys.get_back_keys()
 
 def phase_plane_grid(vector_field, min_value, max_value, step):
 	# 1D arrays
