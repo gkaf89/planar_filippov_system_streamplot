@@ -160,7 +160,7 @@ def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
 
 	return stream_lines
 
-def _cumulative_distance(line):
+def __cumulative_distance(line):
 	cumulative_length = 0.0
 	lengths = []
 	previous_point = None
@@ -177,17 +177,17 @@ def _cumulative_distance(line):
 
 	return lengths
 
-def _ensure_minimum_edge_separation(location_fraction, min_edge_fraction):
+def __ensure_minimum_edge_separation(location_fraction, min_edge_fraction):
 	location_fraction = max( min_edge_fraction, location_fraction )
 	location_fraction = min( 1 - min_edge_fraction, location_fraction )
 	
 	return location_fraction
 
-def _find_midpoint(line, min_edge_fraction = 0.01):
+def __find_midpoint(line, min_edge_fraction = 0.01):
 	if len(line) < 2:
 		return None
 	
-	lengths = _cumulative_distance(line)
+	lengths = __cumulative_distance(line)
 	total_length = lengths[-1]
 	
 	mid_length = 0.5 * total_length
@@ -198,7 +198,7 @@ def _find_midpoint(line, min_edge_fraction = 0.01):
 			difference = mid_length - lengths[n]
 			
 			location_fraction = difference/distance
-			location_fraction = _ensure_minimum_edge_separation(location_fraction, min_edge_fraction)
+			location_fraction = __ensure_minimum_edge_separation(location_fraction, min_edge_fraction)
 			
 			end_point_fraction = min( location_fraction, 1 - location_fraction )
 			
@@ -212,7 +212,7 @@ def _find_midpoint(line, min_edge_fraction = 0.01):
 	return None
 
 def generate_stream_arrows(stream_lines):
-	return list(map(_find_midpoint, stream_lines))
+	return list(map(__find_midpoint, stream_lines))
 
 def write_stream_lines(filename, stream_lines):
 	with open(filename, 'w') as file:
