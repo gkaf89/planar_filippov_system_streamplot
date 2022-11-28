@@ -3,6 +3,8 @@ import streamlines as streamlines
 
 import matplotlib.pyplot as plt
 
+# See: https://stackoverflow.com/questions/5666056/matplotlib-extracting-data-from-contour-lines
+
 class Meshgrid:
 	def __init__(self, X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S):
 		self.__X = X
