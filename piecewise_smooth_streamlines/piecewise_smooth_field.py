@@ -2,6 +2,7 @@ import numpy as np
 import streamlines as streamlines
 
 import matplotlib.pyplot as plt
+from scipy.optimize import fsolve
 
 # See: https://stackoverflow.com/questions/5666056/matplotlib-extracting-data-from-contour-lines
 
@@ -40,6 +41,50 @@ class Meshgrid:
 		# Show plot with grid
 		plt.grid()
 		plt.show()
+
+def filter_line(line, u, manifold):
+	alpha = - (2*u - 1)
+	filtered_line = []
+	
+	idx = 0
+	crossed_manifold = False
+	while idx < len(line) and not(crossed_manifold):
+		point = line[idx]
+		if alpha*manifold(point[0], point[1]) > 0:
+			filtered_line.append(point)
+			idx = idx + 1
+		else:
+			crossed_manifold = True
+	
+	if crossed_manifold and idx > 0:
+		dx = line[idx] - line[idx-1]
+		x_0 = line[idx-1]
+		
+		def linear_approximation(t):
+			return x_0 + t*dx
+		
+		t_0 = fsolve(lambda t : alpha*manifold(linear_approximation(t)), 0.5)
+		final_point = linear_approximation(t_0)
+		
+		filtered_line.append(final_point)
+	
+	return filtered_line
+
+def filer_stream_lines(stream_lines, u, manifold):
+	filtered_stream_lines = []
+	for line in stream_lines:
+		filtered_stream_lines.append(filter_line(line, u, manifold))
+	
+	return filtered_stream_lines
+
+def generate_stream_lines(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, manifold, *argv, **kwargs):
+	extended_stream_lines_0 = streamlines.generate_stream_lines(X, Y, Fx_0, Fy_0, argv, kwargs)
+	extended_stream_lines_1 = streamlines.generate_stream_lines(X, Y, Fx_1, Fy_1, argv, kwargs)
+	
+	stream_lines_0 = filtered_stream_lines(extended_stream_lines_0, 0, manifold)
+	stream_lines_1 = filtered_stream_lines(extended_stream_lines_1, 1, manifold)
+	
+	return (stream_lines_0, stream_lines_1)
 
 class PiecewiseSmoothBifield:
 	def __init__(self, vector_field_0, vector_field_1, manifold):
