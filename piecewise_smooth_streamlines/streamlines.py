@@ -7,7 +7,7 @@ import os
 
 import datastructures as struct
 
-class LineKeys:
+class _LineKeys:
 	def __init__(self):
 		self.__begin = {}
 		self.__end = {}
@@ -33,9 +33,9 @@ class LineKeys:
 	def get_back_keys(self):
 		return self.__end
 
-class Lines:
+class _Lines:
 	def __init__(self):
-		self.__line_keys = LineKeys()
+		self.__line_keys = _LineKeys()
 		self.__begin = {}
 		self.__end = {}
 	
@@ -143,7 +143,7 @@ def is_singular(segment):
 def segments_to_streamlines(segments):
 	non_singular_segments = filter(lambda segment : not(is_singular(segment)), segments)
 	
-	lines = Lines()
+	lines = _Lines()
 	for segment in non_singular_segments:
 		process_segment(lines, segment)
 	
