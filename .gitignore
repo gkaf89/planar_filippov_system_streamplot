@@ -6,3 +6,6 @@
 *\.pdf
 *\.png
 *\.eps
+
+Pipfile
+Pipfile.lock
