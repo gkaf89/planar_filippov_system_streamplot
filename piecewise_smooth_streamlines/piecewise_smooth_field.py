@@ -1,8 +1,11 @@
 import numpy as np
-import streamlines as streamlines
 
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
+import functools
+import tail_recursive
+
+import streamlines as streamlines
 
 # See: https://stackoverflow.com/questions/5666056/matplotlib-extracting-data-from-contour-lines
 
@@ -42,31 +45,69 @@ class Meshgrid:
 		plt.grid()
 		plt.show()
 
-def filter_line(line, u, manifold):
+def signed_manifold(x, u, manifold):
 	alpha = - (2*u - 1)
-	filtered_line = []
+	return alpha * manifold(x[0], x[1])
+
+# Indepotent function
+def drop_negative_sequence(line, u, manifold, idx):
+	while idx < len(line) and signed_manifold(line[idx], u, manifold) < 0:
+		idx = idx + 1
+
+# Indepotent function
+def extract_positive_subsequence(line, u, manifold, idx, visible_line_section):
+	while idx < len(line) and signed_manifold(line[idx], u, manifold) > 0:
+		x = line[idx]
+		visible_line_section.apend(x)
+		idx = idx + 1
+
+def get_crossing_point(manifold, x_0, x_1):
+	dx = x_1 - x_0
+	
+	def linear_approximation(t):
+		return x_0 + t*dx
+	
+	t_0 = fsolve(lambda t : manifold(linear_approximation(t)), 0.5)
+	
+	return linear_approximation(t_0)
+
+def postappend_crossing_point(line, manifold, idx, visible_line_section):
+	if visible_line_section:
+		return
+	
+	if idx >= len(line):
+		return
+	
+	x_0 = visible_line_section[-1]
+	x_1 = line[idx]
+	
+	x_t = get_crossing_point(manifold, x_0, x_1)
+	
+	visible_line_section.append(linear_approximation(x_t));
+
+def preappend_crossing_point(line, manifold, idx, visible_line_section):
+	if idx >= len(line):
+		return
+	
+	if idx < 1:
+		return
+	
+	x_0 = line[idx-1]
+	x_1 = line[idx]
+	
+	x_t = get_crossing_point(manifold, x_0, x_1)
+	
+	visible_line_section.append(linear_approximation(x_t));
+
+def filter_line(line, u, manifold):
+	visible_line_section = []
 	
 	idx = 0
-	crossed_manifold = False
-	while idx < len(line) and not(crossed_manifold):
-		point = line[idx]
-		if alpha*manifold(point[0], point[1]) > 0:
-			filtered_line.append(point)
-			idx = idx + 1
-		else:
-			crossed_manifold = True
-	
-	if crossed_manifold and idx > 0:
-		dx = line[idx] - line[idx-1]
-		x_0 = line[idx-1]
-		
-		def linear_approximation(t):
-			return x_0 + t*dx
-		
-		t_0 = fsolve(lambda t : alpha*manifold(linear_approximation(t)), 0.5)
-		final_point = linear_approximation(t_0)
-		
-		filtered_line.append(final_point)
+	while idx < len(line):
+		extract_positive_subsequence(line, u, manifold, idx, visible_line_section)
+		postappend_crossing_point(line, manifold, idx, visible_line_section)
+		drop_negative_sequence(line, u, manifold, idx)
+		preappend_crossing_point(line, manifold, idx, visible_line_section)
 	
 	return filtered_line
 
