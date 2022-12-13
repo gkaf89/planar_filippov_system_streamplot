@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import bitstring as btstr
 
+import abc
+
 import sys
 import os
 
@@ -73,18 +75,39 @@ class _Lines:
 	def exists_line_ending_with(self, key):
 		return key in self.__line_keys.get_back_keys()
 
-def phase_plane_grid(vector_field, min_value, max_value, step):
-	# 1D arrays
-	x = np.arange(min_value[0], max_value[0], step[0])
-	y = np.arange(min_value[1], max_value[1], step[1])
+class Meshgrid:
+	def __init__(self, X, Y, Fx, Fy):
+		self.X = X
+		self.Y = Y
+		self.Fx = Fx
+		self.Fy = Fy
+
+class MeshgridGenerator(abc.ABC):
+	@abc.abstractmethod
+	def get_meshgrid(self, vector_field):
+		pass
+
+class IsoMeshgridGenerator(MeshgridGenerator):
+	def __init__(self, min_value, max_value, step):
+		self.min_value = min_value
+		self.max_value = max_value
+		self.step = step
 	
-	# Meshgrid
-	X, Y = np.meshgrid(x, y)
-	
-	# Assign vector directions
-	Fx, Fy = vector_field(X, Y)
-	
-	return (X, Y, Fx, Fy)
+	def get_meshgrid(self, vector_field):
+		min_value = self.min_value
+		max_value = self.max_value
+		step = self.step
+		
+		x = np.arange(min_value[0], max_value[0], step[0])
+		y = np.arange(min_value[1], max_value[1], step[1])
+		
+		# Meshgrid
+		X, Y = np.meshgrid(x, y)
+		
+		# Assign vector directions
+		Fx, Fy = vector_field(X, Y)
+		
+		return Meshgrid(X, Y, Fx, Fy)
 
 def point_to_key(point):
 	c0 = btstr.BitArray(float=point[0], length=64).hex
@@ -151,7 +174,10 @@ def segments_to_streamlines(segments):
 	
 	return stream_lines
 
-def generate_stream_lines(X, Y, Fx, Fy, *argv, **kwargs):
+def generate_stream_lines(meshgrid, *argv, **kwargs):
+	X, Y = (meshgrid.X, meshgrid.Y)
+	Fx, Fy = (meshgrid.Fx, meshgrid.Fy)
+	
 	# Depict illustration
 	streamlines = plt.streamplot(X, Y, Fx, Fy, *argv, **kwargs)
 	line_segments = streamlines.lines.get_segments()
@@ -255,9 +281,9 @@ class Streamplot:
 		self.streamlines = streamlines
 		self.streamarrows = streamarrows
 
-def create_streamplot(vector_field, min_value, max_value, step, *argv, **kwargs):
-	X,Y,Ex,Ey = phase_plane_grid(vector_field, min_value, max_value, step)
-	stream_lines = generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs)
+def generate_streamplot(vector_field, meshgrid_generator, *argv, **kwargs):
+	meshgrid = meshgrid_generator.get_meshgrid(vector_field)
+	stream_lines = generate_stream_lines(meshgrid, *argv, **kwargs)
 	stream_arrows = generate_stream_arrows(stream_lines)
 	return Streamplot(stream_lines, stream_arrows)
 
@@ -279,7 +305,8 @@ def write_streamplot(directory, streamplot):
 
 def main():
 	f = lambda X, Y : ((X + 1)/((X+1)**2 + Y**2) - (X - 1)/((X-1)**2 + Y**2), Y/((X+1)**2 + Y**2) - Y/((X-1)**2 + Y**2))
-	streamplot = create_streamplot( f, (-5,-5), (5,5), (0.1, 0.1), density=1.4)
+	meshgrid_generator = IsoMeshgridGenerator(min_value=(-5,-5), max_value=(5,5), step=(0.1, 0.1))
+	streamplot = generate_streamplot( f, meshgrid_generator, density=1.4)
 	write_streamplot('streamplot', streamplot)
 
 def test():
