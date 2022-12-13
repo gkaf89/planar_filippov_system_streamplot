@@ -109,19 +109,19 @@ class IsoMeshgridGenerator(MeshgridGenerator):
 		
 		return Meshgrid(X, Y, Fx, Fy)
 
-def point_to_key(point):
+def __point_to_key(point):
 	c0 = btstr.BitArray(float=point[0], length=64).hex
 	c1 = btstr.BitArray(float=point[1], length=64).hex
 	return (c0, c1)
 
-def segment_to_key(segment):
-	k_begin = point_to_key(segment[0,:])
-	k_end = point_to_key(segment[1,:])
+def __segment_to_key(segment):
+	k_begin = __point_to_key(segment[0,:])
+	k_end = __point_to_key(segment[1,:])
 	
 	return (k_begin, k_end)
 
-def process_segment(lines, segment):
-	k = segment_to_key(segment)
+def __process_segment(lines, segment):
+	k = __segment_to_key(segment)
 	k_begin, k_end = k
 	
 	if lines.exists_line_begining_with(k_end):
@@ -144,7 +144,7 @@ def process_segment(lines, segment):
 		line.push_back(segment[1,:])
 		lines.insert(k, line)
 
-def lines_to_list(line_segments):
+def __lines_to_list(line_segments):
 	keys, lines = line_segments.get_front_list()
 	
 	stream_lines = []
@@ -159,22 +159,22 @@ def lines_to_list(line_segments):
 	
 	return stream_lines
 
-def is_singular(segment):
-	k_begin, k_end = segment_to_key(segment)
+def __is_singular(segment):
+	k_begin, k_end = __segment_to_key(segment)
 	return k_begin == k_end
 
-def segments_to_streamlines(segments):
-	non_singular_segments = filter(lambda segment : not(is_singular(segment)), segments)
+def __segments_to_streamlines(segments):
+	non_singular_segments = filter(lambda segment : not(__is_singular(segment)), segments)
 	
 	lines = _Lines()
 	for segment in non_singular_segments:
-		process_segment(lines, segment)
+		__process_segment(lines, segment)
 	
-	stream_lines = lines_to_list(lines)
+	stream_lines = __lines_to_list(lines)
 	
 	return stream_lines
 
-def generate_stream_lines(meshgrid, *argv, **kwargs):
+def __generate_stream_lines(meshgrid, *argv, **kwargs):
 	X, Y = (meshgrid.X, meshgrid.Y)
 	Fx, Fy = (meshgrid.Fx, meshgrid.Fy)
 	
@@ -182,7 +182,7 @@ def generate_stream_lines(meshgrid, *argv, **kwargs):
 	streamlines = plt.streamplot(X, Y, Fx, Fy, *argv, **kwargs)
 	line_segments = streamlines.lines.get_segments()
 	
-	stream_lines = segments_to_streamlines(line_segments)
+	stream_lines = __segments_to_streamlines(line_segments)
 
 	return stream_lines
 
@@ -237,10 +237,10 @@ def __find_midpoint(line, min_edge_fraction = 0.01):
 			return (initial_point, mid_segment, final_point)
 	return None
 
-def generate_stream_arrows(stream_lines):
+def __generate_stream_arrows(stream_lines):
 	return list(map(__find_midpoint, stream_lines))
 
-def write_stream_lines(filename, stream_lines):
+def __write_stream_lines(filename, stream_lines):
 	with open(filename, 'w') as file:
 		separate_next_line = False
 		for line in stream_lines:
@@ -254,7 +254,7 @@ def write_stream_lines(filename, stream_lines):
 				file.write(f'{point[1]:.16f}')
 				file.write('\n')
 
-def write_stream_arrows(filename, arrows):
+def __write_stream_arrows(filename, arrows):
 	with open(filename, 'w') as file:
 		separate_next_line = False
 		for arrow in arrows:
@@ -283,8 +283,8 @@ class Streamplot:
 
 def generate_streamplot(vector_field, meshgrid_generator, *argv, **kwargs):
 	meshgrid = meshgrid_generator.get_meshgrid(vector_field)
-	stream_lines = generate_stream_lines(meshgrid, *argv, **kwargs)
-	stream_arrows = generate_stream_arrows(stream_lines)
+	stream_lines = __generate_stream_lines(meshgrid, *argv, **kwargs)
+	stream_arrows = __generate_stream_arrows(stream_lines)
 	return Streamplot(stream_lines, stream_arrows)
 
 def write_streamplot(directory, streamplot):
@@ -298,10 +298,10 @@ def write_streamplot(directory, streamplot):
 		sys.exit('Program terminating.')
 	
 	streamlines_file = os.path.join(directory, 'streamlines.dat')
-	write_stream_lines(str(streamlines_file), streamplot.streamlines)
+	__write_stream_lines(str(streamlines_file), streamplot.streamlines)
 	
 	streamarrows_file = os.path.join(directory, 'streamarrows.dat')
-	write_stream_arrows(str(streamarrows_file), streamplot.streamarrows)
+	__write_stream_arrows(str(streamarrows_file), streamplot.streamarrows)
 
 def main():
 	f = lambda X, Y : ((X + 1)/((X+1)**2 + Y**2) - (X - 1)/((X-1)**2 + Y**2), Y/((X+1)**2 + Y**2) - Y/((X-1)**2 + Y**2))
@@ -318,7 +318,7 @@ def test():
 		np.array([[1.0, 1.0], [2.0, 1.0]]),
 		np.array([[2.0, 1.0], [3.0, 1.0]])
 		]
-	stream_lines = segments_to_streamlines(streamline_segments)
+	stream_lines = __segments_to_streamlines(streamline_segments)
 
 if __name__ == '__main__':
 	main()
