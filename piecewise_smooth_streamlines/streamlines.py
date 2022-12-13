@@ -82,9 +82,9 @@ def phase_plane_grid(vector_field, min_value, max_value, step):
 	X, Y = np.meshgrid(x, y)
 	
 	# Assign vector directions
-	Ex, Ey = vector_field(X, Y)
+	Fx, Fy = vector_field(X, Y)
 	
-	return (X, Y, Ex, Ey)
+	return (X, Y, Fx, Fy)
 
 def point_to_key(point):
 	c0 = btstr.BitArray(float=point[0], length=64).hex
@@ -151,9 +151,9 @@ def segments_to_streamlines(segments):
 	
 	return stream_lines
 
-def generate_stream_lines(X, Y, Ex, Ey, *argv, **kwargs):
+def generate_stream_lines(X, Y, Fx, Fy, *argv, **kwargs):
 	# Depict illustration
-	streamlines = plt.streamplot(X, Y, Ex, Ey, *argv, **kwargs)
+	streamlines = plt.streamplot(X, Y, Fx, Fy, *argv, **kwargs)
 	line_segments = streamlines.lines.get_segments()
 	
 	stream_lines = segments_to_streamlines(line_segments)

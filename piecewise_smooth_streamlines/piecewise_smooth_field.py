@@ -127,7 +127,7 @@ def generate_stream_lines(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, manifold, *argv, **kwarg
 	
 	return (stream_lines_0, stream_lines_1)
 
-class PiecewiseSmoothBifield:
+class PiecewiseSmoothBifieldStreamplot:
 	def __init__(self, vector_field_0, vector_field_1, manifold):
 		self.__vector_field_0 = vector_field_0
 		self.__vector_field_1 = vector_field_1

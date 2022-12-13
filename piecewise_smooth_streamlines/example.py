@@ -30,7 +30,7 @@ def main():
 
 	manifold = lambda x_0, x_1 : (1/(n*C))*(1-u_out)*x_0 + (alpha - 1/(R*C))*x_1 - alpha*v_out
 
-	f = pws.PiecewiseSmoothBifield(vector_field_0, vector_field_1, manifold)
+	f = pws.PiecewiseSmoothBifieldStreamplot(vector_field_0, vector_field_1, manifold)
 	meshgrid = f.phase_plane_grid(
 		[-23*P/v_out,-3*v_out], [25*P/v_out, 5*v_out],
 		list(map(lambda x : 0.001*x, [2*P/v_out, 2*v_out]))
