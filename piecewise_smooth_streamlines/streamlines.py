@@ -203,42 +203,48 @@ def __cumulative_distance(line):
 
 	return lengths
 
-def __ensure_minimum_edge_separation(location_fraction, min_edge_fraction):
-	location_fraction = max( min_edge_fraction, location_fraction )
-	location_fraction = min( 1 - min_edge_fraction, location_fraction )
-	
-	return location_fraction
-
-def __find_midpoint(line, min_edge_fraction = 0.01):
+def __get_line_midpoint_arrow(line, min_segment_extension_factor = 0.01):
 	if len(line) < 2:
 		return None
 	
 	lengths = __cumulative_distance(line)
-	total_length = lengths[-1]
 	
-	mid_length = 0.5 * total_length
+	def get_mid_length():
+		total_length = lengths[-1]
+		return 0.5 * total_length
 	
+	mid_length = get_mid_length()
+	
+	def get_midpoint_position_factor(n):
+		midpoint_position_factor = (mid_length - lengths[n]) / (lengths[n+1] - lengths[n])
+
+		return midpoint_position_factor
+	
+	def get_segment_extension_factor(midpoint_position_factor):
+		segment_extension_factor = min( midpoint_position_factor, 1 - midpoint_position_factor )
+		segment_extension_factor = max( min_segment_extension_factor, segment_extension_factor )
+		
+		return segment_extension_factor
+	
+	def get_arrow_segment(start, segment_vector, midpoint_position_factor, segment_extension_factor):
+		mid_point = start + midpoint_position_factor * segment_vector
+		
+		start_point = mid_point - segment_extension_factor * segment_vector
+		end_point = mid_point + segment_extension_factor * segment_vector
+		
+		return (start_point, mid_point, end_point)
+		
 	for n in range(0, len(line)-1):
 		if lengths[n+1] > mid_length:
-			distance = lengths[n+1] - lengths[n]
-			difference = mid_length - lengths[n]
+			midpoint_position_factor = get_midpoint_position_factor(n)
+			segment_extension_factor = get_segment_extension_factor(midpoint_position_factor)
 			
-			location_fraction = difference/distance
-			location_fraction = __ensure_minimum_edge_separation(location_fraction, min_edge_fraction)
+			return get_arrow_segment(line[n], line[n+1] - line[n], midpoint_position_factor, segment_extension_factor)
 			
-			end_point_fraction = min( location_fraction, 1 - location_fraction )
-			
-			displacement = line[n+1] - line[n]
-			
-			mid_segment = line[n] + location_fraction * displacement
-			initial_point = mid_segment - end_point_fraction * displacement
-			final_point = mid_segment + end_point_fraction * displacement
-			
-			return (initial_point, mid_segment, final_point)
 	return None
 
 def __generate_stream_arrows(stream_lines):
-	return list(map(__find_midpoint, stream_lines))
+	return list(map(__get_line_midpoint_arrow, stream_lines))
 
 def __write_stream_lines(filename, stream_lines):
 	with open(filename, 'w') as file:
