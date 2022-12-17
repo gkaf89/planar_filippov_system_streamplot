@@ -35,7 +35,7 @@ class _LineKeys:
 	def get_back_keys(self):
 		return self.__end
 
-class _Lines:
+class _LineEdgesMap:
 	def __init__(self):
 		self.__line_keys = _LineKeys()
 		self.__begin = {}
@@ -109,19 +109,19 @@ class IsoMeshgridGenerator(MeshgridGenerator):
 		
 		return Meshgrid(X, Y, Fx, Fy)
 
-def __point_to_key(point):
+def __get_key_of_point(point):
 	c0 = btstr.BitArray(float=point[0], length=64).hex
 	c1 = btstr.BitArray(float=point[1], length=64).hex
 	return (c0, c1)
 
-def __segment_to_key(segment):
-	k_begin = __point_to_key(segment[0,:])
-	k_end = __point_to_key(segment[1,:])
+def __get_key_of_segment(segment):
+	k_begin = __get_key_of_point(segment[0,:])
+	k_end = __get_key_of_point(segment[1,:])
 	
 	return (k_begin, k_end)
 
 def __process_segment(lines, segment):
-	k = __segment_to_key(segment)
+	k = __get_key_of_segment(segment)
 	k_begin, k_end = k
 	
 	if lines.exists_line_begining_with(k_end):
@@ -144,7 +144,7 @@ def __process_segment(lines, segment):
 		line.push_back(segment[1,:])
 		lines.insert(k, line)
 
-def __lines_to_list(line_segments):
+def __convert_LineEdgesMap_to_List(line_segments):
 	keys, lines = line_segments.get_front_list()
 	
 	stream_lines = []
@@ -160,17 +160,17 @@ def __lines_to_list(line_segments):
 	return stream_lines
 
 def __is_singular(segment):
-	k_begin, k_end = __segment_to_key(segment)
+	k_begin, k_end = __get_key_of_segment(segment)
 	return k_begin == k_end
 
 def __segments_to_streamlines(segments):
 	non_singular_segments = filter(lambda segment : not(__is_singular(segment)), segments)
 	
-	lines = _Lines()
+	lines = _LineEdgesMap()
 	for segment in non_singular_segments:
 		__process_segment(lines, segment)
 	
-	stream_lines = __lines_to_list(lines)
+	stream_lines = __convert_LineEdgesMap_to_List(lines)
 	
 	return stream_lines
 
@@ -186,7 +186,7 @@ def __generate_stream_lines(meshgrid, *argv, **kwargs):
 
 	return stream_lines
 
-def __cumulative_distance(line):
+def __get_cumulative_distances_along_line_points(line):
 	cumulative_length = 0.0
 	lengths = []
 	previous_point = None
@@ -207,7 +207,7 @@ def __get_line_midpoint_arrow(line, min_segment_extension_factor = 0.01):
 	if len(line) < 2:
 		return None
 	
-	lengths = __cumulative_distance(line)
+	lengths = __get_cumulative_distances_along_line_points(line)
 	
 	def get_mid_length():
 		total_length = lengths[-1]
