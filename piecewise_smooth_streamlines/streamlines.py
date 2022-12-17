@@ -188,7 +188,7 @@ def __generate_stream_lines(meshgrid, *argv, **kwargs):
 
 def __get_cumulative_distances_along_line_points(line):
 	cumulative_length = 0.0
-	lengths = []
+	length_up_to_point = []
 	previous_point = None
 	
 	for point in line:
@@ -198,50 +198,50 @@ def __get_cumulative_distances_along_line_points(line):
 			distance = np.linalg.norm(point - previous_point)
 		
 		cumulative_length = cumulative_length + distance
-		lengths.append(cumulative_length)
+		length_up_to_point.append(cumulative_length)
 		previous_point = point
 
-	return lengths
+	return length_up_to_point
 
-def __get_line_midpoint_arrow(line, min_segment_extension_factor = 0.01):
+def __expand_arrow_up_to_the_closest_segment_edge(position_factor_along_segment, min_arrow_extension_factor):
+	arrow_extension_factor = min( position_factor_along_segment, 1 - position_factor_along_segment )
+	arrow_extension_factor = max( min_arrow_extension_factor, arrow_extension_factor )
+	
+	return arrow_extension_factor
+
+def __get_arrow_segment(start, segment_vector, midpoint_position_factor, arrow_extension_factor):
+	mid_point = start + midpoint_position_factor * segment_vector
+	
+	start_point = mid_point - arrow_extension_factor * segment_vector
+	end_point = mid_point + arrow_extension_factor * segment_vector
+	
+	return (start_point, mid_point, end_point)
+
+def __get_line_midpoint_arrow(line, min_arrow_extension_factor = 0.01):
 	if len(line) < 2:
 		return None
 	
-	lengths = __get_cumulative_distances_along_line_points(line)
+	length_up_to_point = __get_cumulative_distances_along_line_points(line)
 	
-	def get_mid_length():
-		total_length = lengths[-1]
-		return 0.5 * total_length
+	total_length = length_up_to_point[-1]
+	half_length = 0.5 * total_length
 	
-	mid_length = get_mid_length()
+	def get_index_of_last_point_before_line_half_length():
+		n = np.searchsorted(length_up_to_point, half_length, side = 'left')
+		# length_up_to_point[n-1] < half_length <= length_up_to_point[n]
+		n = n - 1
+		# length_up_to_point[n] < half_length <= length_up_to_point[n+1]
+		return n
 	
-	def get_midpoint_position_factor(n):
-		midpoint_position_factor = (mid_length - lengths[n]) / (lengths[n+1] - lengths[n])
-
-		return midpoint_position_factor
+	n = get_index_of_last_point_before_line_half_length()
 	
-	def get_segment_extension_factor(midpoint_position_factor):
-		segment_extension_factor = min( midpoint_position_factor, 1 - midpoint_position_factor )
-		segment_extension_factor = max( min_segment_extension_factor, segment_extension_factor )
-		
-		return segment_extension_factor
-	
-	def get_arrow_segment(start, segment_vector, midpoint_position_factor, segment_extension_factor):
-		mid_point = start + midpoint_position_factor * segment_vector
-		
-		start_point = mid_point - segment_extension_factor * segment_vector
-		end_point = mid_point + segment_extension_factor * segment_vector
-		
-		return (start_point, mid_point, end_point)
-		
-	for n in range(0, len(line)-1):
-		if lengths[n+1] > mid_length:
-			midpoint_position_factor = get_midpoint_position_factor(n)
-			segment_extension_factor = get_segment_extension_factor(midpoint_position_factor)
+	midpoint_position_factor_along_the_segmen_at_the_line_half_length = (half_length - length_up_to_point[n]) / (length_up_to_point[n+1] - length_up_to_point[n])
+	arrow_extension_factor = __expand_arrow_up_to_the_closest_segment_edge(midpoint_position_factor_along_the_segmen_at_the_line_half_length, min_arrow_extension_factor)
 			
-			return get_arrow_segment(line[n], line[n+1] - line[n], midpoint_position_factor, segment_extension_factor)
-			
-	return None
+	return __get_arrow_segment(line[n],
+		line[n+1] - line[n],
+		midpoint_position_factor_along_the_segmen_at_the_line_half_length,
+		arrow_extension_factor)
 
 def __generate_stream_arrows(stream_lines):
 	return list(map(__get_line_midpoint_arrow, stream_lines))
