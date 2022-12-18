@@ -120,29 +120,35 @@ def __get_key_of_segment(segment):
 	
 	return (k_begin, k_end)
 
-def __process_segment(lines, segment):
-	k = __get_key_of_segment(segment)
-	k_begin, k_end = k
+def __process_segment(line_edges_map, segment):
+	segment_key = __get_key_of_segment(segment)
+	segment_start_key, segment_end_key = segment_key
 	
-	if lines.exists_line_begining_with(k_end):
-		if lines.exists_line_ending_with(k_begin):
-			key_back, line_back = lines.pop_front(k_end)
-			key_front, line_front = lines.pop_back(k_begin)
-			line_front.append_back(line_back)
-			lines.insert((key_front[0], key_back[1]), line_front)
+	if line_edges_map.exists_line_begining_with(segment_end_key):
+		if line_edges_map.exists_line_ending_with(segment_start_key):
+			back_line_part_key, back_line_part = line_edges_map.pop_front(segment_end_key)
+			front_line_part_key, front_line_part = line_edges_map.pop_back(segment_start_key)
+			front_line_part.append_back(back_line_part)
+			front_line_part_start_key, _ = front_line_part_key
+			_, back_line_part_end_key = back_line_part_key
+			line_edges_map.insert((front_line_part_start_key, back_line_part_end_key), front_line_part)
 		else:
-			line_key, line = lines.pop_front(k_end)
-			line.push_front(segment[0,:])
-			lines.insert((k_begin, line_key[1]), line)
-	elif lines.exists_line_ending_with(k_begin):
-		line_key, line = lines.pop_back(k_begin)
-		line.push_back(segment[1,:])
-		lines.insert((line_key[0], k_end), line)
+			line_key, line = line_edges_map.pop_front(segment_end_key)
+			segment_start_point = segment[0,:]
+			line.push_front(segment_start_point)
+			_, line_end_key = line_key
+			line_edges_map.insert((segment_start_key, line_end_key), line)
+	elif line_edges_map.exists_line_ending_with(segment_start_key):
+		line_key, line = line_edges_map.pop_back(segment_start_key)
+		segment_end_point = segment[1,:]
+		line.push_back(segment_end_point)
+		line_start_key, _ = line_key
+		line_edges_map.insert((line_start_key, segment_end_key), line)
 	else:
 		line = struct.Dequeue()
 		line.push_front(segment[0,:])
 		line.push_back(segment[1,:])
-		lines.insert(k, line)
+		line_edges_map.insert(segment_key, line)
 
 def __convert_LineEdgesMap_to_List(line_segments):
 	keys, lines = line_segments.get_front_list()
