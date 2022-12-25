@@ -195,7 +195,7 @@ def __segments_to_streamlines(segments):
 	
 	return stream_lines
 
-def __generate_stream_lines(meshgrid, *argv, **kwargs):
+def generate_stream_lines(meshgrid, *argv, **kwargs):
 	X, Y = (meshgrid.X, meshgrid.Y)
 	Fx, Fy = (meshgrid.Fx, meshgrid.Fy)
 	
@@ -264,7 +264,7 @@ def __get_line_midpoint_arrow(line, min_arrow_extension_factor = 0.01):
 		midpoint_position_factor_along_the_segmen_at_the_line_half_length,
 		arrow_extension_factor)
 
-def __generate_stream_arrows(stream_lines):
+def generate_stream_arrows(stream_lines):
 	return list(map(__get_line_midpoint_arrow, stream_lines))
 
 def __write_stream_lines(filename, stream_lines):
@@ -310,8 +310,8 @@ class Streamplot:
 
 def generate_streamplot(vector_field, meshgrid_generator, *argv, **kwargs):
 	meshgrid = meshgrid_generator.get_meshgrid(vector_field)
-	stream_lines = __generate_stream_lines(meshgrid, *argv, **kwargs)
-	stream_arrows = __generate_stream_arrows(stream_lines)
+	stream_lines = generate_stream_lines(meshgrid, *argv, **kwargs)
+	stream_arrows = generate_stream_arrows(stream_lines)
 	return Streamplot(stream_lines, stream_arrows)
 
 def write_streamplot(directory, streamplot):
