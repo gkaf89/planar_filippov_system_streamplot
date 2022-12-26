@@ -1,4 +1,5 @@
 import numpy as np
+import abc
 
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
@@ -9,57 +10,78 @@ import streamlines as streamlines
 
 # See: https://stackoverflow.com/questions/5666056/matplotlib-extracting-data-from-contour-lines
 
-class Meshgrid:
+class PiecewiseBifieldMeshgrid:
 	def __init__(self, X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S):
-		self.__X = X
-		self.__Y = Y
-		self.__Fx_0 = Fx_0
-		self.__Fy_0 = Fy_0
-		self.__Fx_1 = Fx_1
-		self.__Fy_1 = Fy_1
-		self.__S = S
+		self.X = X
+		self.Y = Y
+		self.Fx_0 = Fx_0
+		self.Fy_0 = Fy_0
+		self.Fx_1 = Fx_1
+		self.Fy_1 = Fy_1
+		self.S = S
 
-	def generate_stream_lines(self, *args, **kwargs):
-		stream_lines_0 = streamlines.generate_stream_lines(self.__X, self.__Y, self.__Fx_0, self.__Fy_0, *args, **kwargs)
-		stream_lines_1 = streamlines.generate_stream_lines(self.__X, self.__Y, self.__Fx_1, self.__Fy_1, *args, **kwargs)
-		return (stream_lines_0, stream_lines_1)
+class PiecewiseBifieldMeshgridGenerator(abc.ABC):
+	@abc.abstractmethod
+	def get_piecewise_bifiled_meshgrid(self, vector_field_0, vector_field_1, switching_manifold):
+		pass
 
-	def test_plot(self):
-		plt.figure(figsize=(10, 10))
-		plt.streamplot(self.__X, self.__Y, self.__Fx_0, self.__Fy_0, density=1.4, linewidth=None, color='#A23BEC')
-		plt.plot(-1,0,'-or')
-		plt.plot(1,0,'-og')
-		plt.title('Field 0')
+class IsoPiecewiseBifieldMeshgridGenerator(PiecewiseBifieldMeshgridGenerator):
+	def __init__(self, min_value, max_value, step):
+		self.min_value = min_value
+		self.max_value = max_value
+		self.step = step
+	
+	def get_piecewise_bifiled_meshgrid(self, vector_field_0, vector_field_1, switching_manifold):
+		min_value = self.min_value
+		max_value = self.max_value
+		step = self.step
+		
+		# 1D arrays
+		x = np.arange(min_value[0], max_value[0], step[0])
+		y = np.arange(min_value[1], max_value[1], step[1])
+		
+		# Meshgrid
+		X, Y = np.meshgrid(x, y)
+		
+		# Assign vector directions
+		Fx_0, Fy_0 = vector_field_0(X, Y)
+		Fx_1, Fy_1 = vector_field_1(X, Y)
+		S = switching_manifold(X, Y)
+		
+		return PiecewiseBifieldMeshgrid(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S)
 
-		# Show plot with grid
-		plt.grid()
-		plt.show()
+def generate_full_stream_lines(piecewiseBifieldMeshgrid, *argv, **kwargs):
+	X, Y = (piecewiseBifieldMeshgrid.X, piecewiseBifieldMeshgrid.Y)
+	Fx_0, Fy_0 = (piecewiseBifieldMeshgrid.Fx_0, piecewiseBifieldMeshgrid.Fy_0)
+	Fx_1, Fy_1 = (piecewiseBifieldMeshgrid.Fx_1, piecewiseBifieldMeshgrid.Fy_1)
+	
+	messgrid_0 = Meshgrid(X, Y, Fx_0, Fy_0)
+	messgrid_1 = Meshgrid(X, Y, Fx_1, Fy_1)
+	
+	stream_lines_0 = streamlines.generate_stream_lines(meshgrid_0, *argv, **kwargs):
+	stream_lines_1 = streamlines.generate_stream_lines(meshgrid_1, *argv, **kwargs):
+	
+	return (stream_lines_0, stream_lines_1)
 
-		plt.figure(figsize=(10, 10))
-		plt.streamplot(self.__X, self.__Y, self.__Fx_1, self.__Fy_1, density=1.4, linewidth=None, color='#A23BEC')
-		plt.plot(-1,0,'-or')
-		plt.plot(1,0,'-og')
-		plt.title('Field 1')
-
-		# Show plot with grid
-		plt.grid()
-		plt.show()
-
-def signed_manifold(x, u, manifold):
+def dynamics_is_vissible(x, u, manifold):
 	alpha = - (2*u - 1)
-	return alpha * manifold(x[0], x[1])
+	return alpha * manifold(x[0], x[1]) >= 0
 
 # Indepotent function
 def drop_negative_sequence(line, u, manifold, idx):
-	while idx < len(line) and signed_manifold(line[idx], u, manifold) < 0:
+	while idx < len(line) and not(dynamics_is_vissible(line[idx], u, manifold)):
 		idx = idx + 1
+	
+	return idx
 
 # Indepotent function
 def extract_positive_subsequence(line, u, manifold, idx, visible_line_section):
-	while idx < len(line) and signed_manifold(line[idx], u, manifold) > 0:
+	while idx < len(line) and dynamics_is_vissible(line[idx], u, manifold):
 		x = line[idx]
 		visible_line_section.apend(x)
 		idx = idx + 1
+	
+	return idx
 
 def get_crossing_point(manifold, x_0, x_1):
 	dx = x_1 - x_0
@@ -72,7 +94,7 @@ def get_crossing_point(manifold, x_0, x_1):
 	return linear_approximation(t_0)
 
 def postappend_crossing_point(line, manifold, idx, visible_line_section):
-	if visible_line_section:
+	if not(visible_line_section):
 		return
 	
 	if idx >= len(line):
@@ -99,14 +121,14 @@ def preappend_crossing_point(line, manifold, idx, visible_line_section):
 	
 	visible_line_section.append(linear_approximation(x_t));
 
-def filter_line(line, u, manifold):
+def filter_stream_line(line, u, manifold):
 	visible_line_section = []
 	
 	idx = 0
 	while idx < len(line):
-		extract_positive_subsequence(line, u, manifold, idx, visible_line_section)
+		idx = extract_positive_subsequence(line, u, manifold, idx, visible_line_section)
 		postappend_crossing_point(line, manifold, idx, visible_line_section)
-		drop_negative_sequence(line, u, manifold, idx)
+		idx = drop_negative_sequence(line, u, manifold, idx)
 		preappend_crossing_point(line, manifold, idx, visible_line_section)
 	
 	return filtered_line
@@ -114,7 +136,7 @@ def filter_line(line, u, manifold):
 def filer_stream_lines(stream_lines, u, manifold):
 	filtered_stream_lines = []
 	for line in stream_lines:
-		filtered_stream_lines.append(filter_line(line, u, manifold))
+		filtered_stream_lines.append(filter_stream_line(line, u, manifold))
 	
 	return filtered_stream_lines
 
@@ -186,3 +208,24 @@ class PiecewiseSmoothBifieldStreamplot:
 		X, Y, Fx, Fy = FilipovPlanarField.filter_phase_planes(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S)
 
 		return (X, Y, Fx, Fy)
+
+def test_plot(self):
+	plt.figure(figsize=(10, 10))
+	plt.streamplot(self.__X, self.__Y, self.__Fx_0, self.__Fy_0, density=1.4, linewidth=None, color='#A23BEC')
+	plt.plot(-1,0,'-or')
+	plt.plot(1,0,'-og')
+	plt.title('Field 0')
+
+	# Show plot with grid
+	plt.grid()
+	plt.show()
+
+	plt.figure(figsize=(10, 10))
+	plt.streamplot(self.__X, self.__Y, self.__Fx_1, self.__Fy_1, density=1.4, linewidth=None, color='#A23BEC')
+	plt.plot(-1,0,'-or')
+	plt.plot(1,0,'-og')
+	plt.title('Field 1')
+
+	# Show plot with grid
+	plt.grid()
+	plt.show()
