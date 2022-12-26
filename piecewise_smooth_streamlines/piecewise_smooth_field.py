@@ -160,7 +160,34 @@ def generate_stream_lines(piecewiseBifield, piecewiseBifieldMeshgridGenerator, *
 	
 	return (stream_lines_0, stream_lines_1)
 
+def generate_contour_plot(X, Y, S, level, **kwargs):
+	contours = plt.contour(X, Y, S, levels = [level], **kwargs)
+	paths = contours.collections[0].get_paths()
+	
+	contour_lines = []
+	for path in paths:
+		line = path.vertices
+		contour_lines.append(line)
+	
+	return contour_lines
 
+def generate_switching_manifold(piecewiseBifield, piecewiseBifieldMeshgridGenerator, **kwargs):
+	piecewise_bifield_meshgrid = piecewiseBifieldMeshgridGenerator.get_piecewise_bifiled_meshgrid(
+		piecewiseBifield.vector_field_0,
+		piecewiseBifield.vector_field_1,
+		piecewiseBifield.manifold
+	)
+	
+	level = 0.0
+	contour_lines = generate_contour_plot(
+		piecewise_bifield_meshgrid.X,
+		piecewise_bifield_meshgrid.Y,
+		piecewise_bifield_meshgrid.S,
+		level,
+		**kwargs
+	)
+	
+	return contour_lines
 
 def test_plot(self):
 	plt.figure(figsize=(10, 10))
