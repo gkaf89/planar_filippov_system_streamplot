@@ -145,49 +145,53 @@ class PiecewiseBifield:
 		self.vector_field_0 = vector_field_0
 		self.vector_field_1 = vector_field_1
 		self.manifold = manifold
-	
-def generate_stream_lines(piecewiseBifield, piecewiseBifieldMeshgridGenerator, *argv, **kwargs)
-	piecewise_bifield_meshgrid = piecewiseBifieldMeshgridGenerator.get_piecewise_bifiled_meshgrid(
-		piecewiseBifield.vector_field_0,
-		piecewiseBifield.vector_field_1,
-		piecewiseBifield.manifold
-	)
 
-	(extended_stream_lines_0, extended_stream_lines_1) = generate_extended_stream_lines(piecewise_bifield_meshgrid, *argv, **kwargs)
-	
-	stream_lines_0 = filtered_stream_lines(extended_stream_lines_0, 0, piecewiseBifield.manifold)
-	stream_lines_1 = filtered_stream_lines(extended_stream_lines_1, 1, piecewiseBifield.manifold)
-	
-	return (stream_lines_0, stream_lines_1)
-
-def generate_contour_plot(X, Y, S, level, **kwargs):
-	contours = plt.contour(X, Y, S, levels = [level], **kwargs)
-	paths = contours.collections[0].get_paths()
-	
-	contour_lines = []
-	for path in paths:
-		line = path.vertices
-		contour_lines.append(line)
-	
-	return contour_lines
-
-def generate_switching_manifold(piecewiseBifield, piecewiseBifieldMeshgridGenerator, **kwargs):
-	piecewise_bifield_meshgrid = piecewiseBifieldMeshgridGenerator.get_piecewise_bifiled_meshgrid(
-		piecewiseBifield.vector_field_0,
-		piecewiseBifield.vector_field_1,
-		piecewiseBifield.manifold
-	)
-	
-	level = 0.0
-	contour_lines = generate_contour_plot(
-		piecewise_bifield_meshgrid.X,
-		piecewise_bifield_meshgrid.Y,
-		piecewise_bifield_meshgrid.S,
-		level,
-		**kwargs
-	)
-	
-	return contour_lines
+class PiecewiseBifieldStreamplot:
+	def __init__(piecewiseBifield, piecewiseBifieldMeshgridGenerator):
+		self.piecewise_bifield_meshgrid = piecewiseBifieldMeshgridGenerator.get_piecewise_bifiled_meshgrid(
+			piecewiseBifield.vector_field_0,
+			piecewiseBifield.vector_field_1,
+			piecewiseBifield.manifold
+		)
+		self.piecewise_bifield = piecewiseBifield
+		
+		def generate_stream_lines(self, *argv, **kwargs):
+			(extended_stream_lines_0, extended_stream_lines_1) = generate_extended_stream_lines(self.piecewise_bifield_meshgrid, *argv, **kwargs)
+			
+			stream_lines_0 = filtered_stream_lines(extended_stream_lines_0, 0, self.piecewise_bifield.manifold)
+			stream_lines_1 = filtered_stream_lines(extended_stream_lines_1, 1, self.piecewise_bifield.manifold)
+			
+			return (stream_lines_0, stream_lines_1)
+		
+		@staticmethod
+		def generate_contour_plot(X, Y, S, level, **kwargs):
+			contours = plt.contour(X, Y, S, levels = [level], **kwargs)
+			paths = contours.collections[0].get_paths()
+			
+			contour_lines = []
+			for path in paths:
+				line = path.vertices
+				contour_lines.append(line)
+			
+			return contour_lines
+		
+		def generate_switching_manifold(self, **kwargs):
+			level = 0.0
+			contour_lines = PiecewiseBifieldStreamplot.generate_contour_plot(
+				self.piecewise_bifield_meshgrid.X,
+				self.piecewise_bifield_meshgrid.Y,
+				self.piecewise_bifield_meshgrid.S,
+				level,
+				**kwargs
+			)
+			
+			return contour_lines
+		
+		def generate_stream_arrows(stream_lines_0, stream_lines_1):
+			stream_arrows_0 = streamlines.generate_stream_arrows(stream_lines_0)
+			stream_arrows_1 = streamlines.generate_stream_arrows(stream_lines_1)
+			
+			return (stream_arrows_0, stream_arrows_1)
 
 def test_plot(self):
 	plt.figure(figsize=(10, 10))

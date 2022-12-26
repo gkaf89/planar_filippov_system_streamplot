@@ -344,7 +344,7 @@ def test():
 		np.array([[0.0, 1.0], [1.0, 1.0]]),
 		np.array([[1.0, 1.0], [2.0, 1.0]]),
 		np.array([[2.0, 1.0], [3.0, 1.0]])
-		]
+	]
 	stream_lines = __segments_to_streamlines(streamline_segments)
 
 if __name__ == '__main__':
