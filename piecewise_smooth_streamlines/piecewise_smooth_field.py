@@ -50,7 +50,7 @@ class IsoPiecewiseBifieldMeshgridGenerator(PiecewiseBifieldMeshgridGenerator):
 		
 		return PiecewiseBifieldMeshgrid(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S)
 
-def generate_full_stream_lines(piecewiseBifieldMeshgrid, *argv, **kwargs):
+def generate_extended_stream_lines(piecewiseBifieldMeshgrid, *argv, **kwargs):
 	X, Y = (piecewiseBifieldMeshgrid.X, piecewiseBifieldMeshgrid.Y)
 	Fx_0, Fy_0 = (piecewiseBifieldMeshgrid.Fx_0, piecewiseBifieldMeshgrid.Fy_0)
 	Fx_1, Fy_1 = (piecewiseBifieldMeshgrid.Fx_1, piecewiseBifieldMeshgrid.Fy_1)
@@ -140,74 +140,23 @@ def filer_stream_lines(stream_lines, u, manifold):
 	
 	return filtered_stream_lines
 
-def generate_stream_lines(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, manifold, *argv, **kwargs):
-	extended_stream_lines_0 = streamlines.generate_stream_lines(X, Y, Fx_0, Fy_0, argv, kwargs)
-	extended_stream_lines_1 = streamlines.generate_stream_lines(X, Y, Fx_1, Fy_1, argv, kwargs)
+class PiecewiseBifield:
+	def __init__(self, vector_field_0, vector_field_1, manifold):
+		self.vector_field_0 = vector_field_0
+		self.vector_field_1 = vector_field_1
+		self.manifold = manifold
 	
-	stream_lines_0 = filtered_stream_lines(extended_stream_lines_0, 0, manifold)
-	stream_lines_1 = filtered_stream_lines(extended_stream_lines_1, 1, manifold)
+def generate_stream_lines(piecewiseBifield, piecewiseBifieldMeshgridGenerator, *argv, **kwargs)
+	piecewise_bifield_meshgrid = piecewiseBifieldMeshgridGenerator.get_piecewise_bifiled_meshgrid(piecewiseBifield.vector_field_0, piecewiseBifield.vector_field_1, piecewiseBifield.manifold)
+
+	(extended_stream_lines_0, extended_stream_lines_1) = generate_extended_stream_lines(piecewise_bifield_meshgrid, *argv, **kwargs)
+	
+	stream_lines_0 = filtered_stream_lines(extended_stream_lines_0, 0, piecewiseBifield.manifold)
+	stream_lines_1 = filtered_stream_lines(extended_stream_lines_1, 1, piecewiseBifield.manifold)
 	
 	return (stream_lines_0, stream_lines_1)
 
-class PiecewiseSmoothBifieldStreamplot:
-	def __init__(self, vector_field_0, vector_field_1, manifold):
-		self.__vector_field_0 = vector_field_0
-		self.__vector_field_1 = vector_field_1
-		self.__manifold = manifold
 
-	def phase_plane_grid(self, min_value, max_value, step):
-		# 1D arrays
-		x = np.arange(min_value[0], max_value[0], step[0])
-		y = np.arange(min_value[1], max_value[1], step[1])
-
-		# Meshgrid
-		X, Y = np.meshgrid(x, y)
-
-		# Assign vector direction
-		Fx_0, Fy_0 = self.__vector_field_0(X, Y)
-		Fx_1, Fy_1 = self.__vector_field_1(X, Y)
-		S = self.__manifold(X,Y)
-
-		return Meshgrid(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S)
-
-	def phase_planes(self, meshgrid, *args, **kwargs):
-		stream_lines_0, stream_lines_1 = meshgrid.generate_stream_lines(*args, **kwargs)
-
-		pos_manifold = lambda x : self.__manifold(x[0], x[1]) > 0
-		filter_pos_manifold = lambda ls : list(filter(pos_manifold, ls))
-		stream_lines_0 = list(map(filter_pos_manifold, stream_lines_0))
-		stream_lines_0 = list(filter(lambda ls : len(ls) > 1, stream_lines_0))
-
-		neg_manifold = lambda x : self.__manifold(x[0], x[1]) <= 0
-		filter_neg_manifold = lambda ls : list(filter(neg_manifold, ls))
-		stream_lines_1 = list(map(filter_neg_manifold, stream_lines_1))
-		stream_lines_1 = list(filter(lambda ls : len(ls) > 1, stream_lines_1))
-
-		return (stream_lines_0, stream_lines_1)
-
-	@staticmethod
-	def filter_phase_planes(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S):
-		nx, ny = S.shape
-
-		Fx = np.zeros((nx, ny))
-		Fy = np.zeros((nx, ny))
-
-		for x in range(nx):
-			for y in range(ny):
-				if S(x,y) > 0:
-					Fx[x,y] = Fx_0[x,y]
-					Fy[x,y] = Fy_0[x,y]
-				else:
-					Fx[x,y] = Fx_1[x,y]
-					Fy[x,y] = Fy_1[x,y]
-
-		return (X, Y, Fx, Fy)
-
-	def phase_plane(vector_field, min_value, max_value, step):
-		X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S = self.phase_planes(min_value, max_value, step)
-		X, Y, Fx, Fy = FilipovPlanarField.filter_phase_planes(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S)
-
-		return (X, Y, Fx, Fy)
 
 def test_plot(self):
 	plt.figure(figsize=(10, 10))
