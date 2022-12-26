@@ -147,7 +147,11 @@ class PiecewiseBifield:
 		self.manifold = manifold
 	
 def generate_stream_lines(piecewiseBifield, piecewiseBifieldMeshgridGenerator, *argv, **kwargs)
-	piecewise_bifield_meshgrid = piecewiseBifieldMeshgridGenerator.get_piecewise_bifiled_meshgrid(piecewiseBifield.vector_field_0, piecewiseBifield.vector_field_1, piecewiseBifield.manifold)
+	piecewise_bifield_meshgrid = piecewiseBifieldMeshgridGenerator.get_piecewise_bifiled_meshgrid(
+		piecewiseBifield.vector_field_0,
+		piecewiseBifield.vector_field_1,
+		piecewiseBifield.manifold
+	)
 
 	(extended_stream_lines_0, extended_stream_lines_1) = generate_extended_stream_lines(piecewise_bifield_meshgrid, *argv, **kwargs)
 	
