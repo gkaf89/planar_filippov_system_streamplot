@@ -55,11 +55,11 @@ def generate_extended_stream_lines(piecewiseBifieldMeshgrid, *argv, **kwargs):
 	Fx_0, Fy_0 = (piecewiseBifieldMeshgrid.Fx_0, piecewiseBifieldMeshgrid.Fy_0)
 	Fx_1, Fy_1 = (piecewiseBifieldMeshgrid.Fx_1, piecewiseBifieldMeshgrid.Fy_1)
 	
-	messgrid_0 = Meshgrid(X, Y, Fx_0, Fy_0)
-	messgrid_1 = Meshgrid(X, Y, Fx_1, Fy_1)
+	meshgrid_0 = streamlines.Meshgrid(X, Y, Fx_0, Fy_0)
+	meshgrid_1 = streamlines.Meshgrid(X, Y, Fx_1, Fy_1)
 	
-	stream_lines_0 = streamlines.generate_stream_lines(meshgrid_0, *argv, **kwargs):
-	stream_lines_1 = streamlines.generate_stream_lines(meshgrid_1, *argv, **kwargs):
+	stream_lines_0 = streamlines.generate_stream_lines(meshgrid_0, *argv, **kwargs)
+	stream_lines_1 = streamlines.generate_stream_lines(meshgrid_1, *argv, **kwargs)
 	
 	return (stream_lines_0, stream_lines_1)
 
