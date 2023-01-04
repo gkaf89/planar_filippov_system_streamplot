@@ -131,7 +131,7 @@ def filter_stream_line(line, u, manifold):
 		idx = drop_negative_sequence(line, u, manifold, idx)
 		preappend_crossing_point(line, manifold, idx, visible_line_section)
 	
-	return filtered_line
+	return visible_line_section
 
 def filer_stream_lines(stream_lines, u, manifold):
 	filtered_stream_lines = []
