@@ -133,7 +133,7 @@ def filter_stream_line(line, u, manifold):
 	
 	return visible_line_section
 
-def filer_stream_lines(stream_lines, u, manifold):
+def filter_stream_lines(stream_lines, u, manifold):
 	filtered_stream_lines = []
 	for line in stream_lines:
 		filtered_stream_lines.append(filter_stream_line(line, u, manifold))
@@ -147,7 +147,7 @@ class PiecewiseBifield:
 		self.manifold = manifold
 
 class PiecewiseBifieldStreamplot:
-	def __init__(piecewiseBifield, piecewiseBifieldMeshgridGenerator):
+	def __init__(self, piecewiseBifield, piecewiseBifieldMeshgridGenerator):
 		self.piecewise_bifield_meshgrid = piecewiseBifieldMeshgridGenerator.get_piecewise_bifiled_meshgrid(
 			piecewiseBifield.vector_field_0,
 			piecewiseBifield.vector_field_1,
@@ -158,8 +158,8 @@ class PiecewiseBifieldStreamplot:
 		def generate_stream_lines(self, *argv, **kwargs):
 			(extended_stream_lines_0, extended_stream_lines_1) = generate_extended_stream_lines(self.piecewise_bifield_meshgrid, *argv, **kwargs)
 			
-			stream_lines_0 = filtered_stream_lines(extended_stream_lines_0, 0, self.piecewise_bifield.manifold)
-			stream_lines_1 = filtered_stream_lines(extended_stream_lines_1, 1, self.piecewise_bifield.manifold)
+			stream_lines_0 = filter_stream_lines(extended_stream_lines_0, 0, self.piecewise_bifield.manifold)
+			stream_lines_1 = filter_stream_lines(extended_stream_lines_1, 1, self.piecewise_bifield.manifold)
 			
 			return (stream_lines_0, stream_lines_1)
 		
