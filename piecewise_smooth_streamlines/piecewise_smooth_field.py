@@ -3,8 +3,6 @@ import abc
 
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
-import functools
-import tail_recursive
 
 import streamlines as streamlines
 
