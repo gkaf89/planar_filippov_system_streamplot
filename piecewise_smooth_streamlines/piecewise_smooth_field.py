@@ -93,7 +93,7 @@ def get_crossing_point(manifold, x_0, x_1):
 	
 	return linear_approximation(t_0)
 
-def postappend_crossing_point(line, manifold, idx, visible_line_section):
+def append_crossing_point(line, manifold, idx, visible_line_section):
 	if not(visible_line_section):
 		return
 	
@@ -107,7 +107,7 @@ def postappend_crossing_point(line, manifold, idx, visible_line_section):
 	
 	visible_line_section.append(x_t);
 
-def preappend_crossing_point(line, manifold, idx, visible_line_section):
+def prepend_crossing_point(line, manifold, idx, visible_line_section):
 	if idx >= len(line):
 		return
 	
@@ -127,9 +127,9 @@ def filter_stream_line(line, u, manifold):
 	idx = 0
 	while idx < len(line):
 		idx = extract_visible_subsequence(line, u, manifold, idx, visible_line_section)
-		postappend_crossing_point(line, manifold, idx, visible_line_section)
+		append_crossing_point(line, manifold, idx, visible_line_section)
 		idx = drop_invisible_subsequence(line, u, manifold, idx)
-		preappend_crossing_point(line, manifold, idx, visible_line_section)
+		prepend_crossing_point(line, manifold, idx, visible_line_section)
 	
 	return visible_line_section
 
