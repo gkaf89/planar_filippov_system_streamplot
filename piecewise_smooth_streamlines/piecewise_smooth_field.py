@@ -165,12 +165,9 @@ class PiecewiseBifieldStreamplot:
 		@staticmethod
 		def generate_contour_plot(X, Y, S, level, **kwargs):
 			contours = plt.contour(X, Y, S, levels = [level], **kwargs)
-			paths = contours.collections[0].get_paths()
+			paths = contours.collections[0].get_paths() # single 'level' present
 			
-			contour_lines = []
-			for path in paths:
-				line = path.vertices
-				contour_lines.append(line)
+			contour_lines = map( lambda path : path.vertices, paths)
 			
 			return contour_lines
 		
