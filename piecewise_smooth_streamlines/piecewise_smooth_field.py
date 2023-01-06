@@ -252,25 +252,3 @@ def generate_stream_plot(piecewiseBifield, piecewiseBifieldMeshgridGenerator, *a
 		raise non_conformant_keyword
 	except UnkownTarget as unkown_target:
 		raise unkown_target
-	
-
-def test_plot(self):
-	plt.figure(figsize=(10, 10))
-	plt.streamplot(self.__X, self.__Y, self.__Fx_0, self.__Fy_0, density=1.4, linewidth=None, color='#A23BEC')
-	plt.plot(-1,0,'-or')
-	plt.plot(1,0,'-og')
-	plt.title('Field 0')
-
-	# Show plot with grid
-	plt.grid()
-	plt.show()
-
-	plt.figure(figsize=(10, 10))
-	plt.streamplot(self.__X, self.__Y, self.__Fx_1, self.__Fy_1, density=1.4, linewidth=None, color='#A23BEC')
-	plt.plot(-1,0,'-or')
-	plt.plot(1,0,'-og')
-	plt.title('Field 1')
-
-	# Show plot with grid
-	plt.grid()
-	plt.show()
