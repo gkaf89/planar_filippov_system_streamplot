@@ -182,13 +182,79 @@ class PiecewiseBifieldStreamplot:
 		)
 		
 		return contour_lines
-		
-def generate_stream_arrows(stream_lines_0, stream_lines_1):
-	stream_arrows_0 = streamlines.generate_stream_arrows(stream_lines_0)
-	stream_arrows_1 = streamlines.generate_stream_arrows(stream_lines_1)
-	
-	return (stream_arrows_0, stream_arrows_1)
 
+class BifieldStreamplot:
+	def __init__(self,
+			  streamlines_0, streamlines_1,
+			  streamarrows_0, streamarrows_1,
+			  switching_manifold):
+		self.streamlines_0 = streamlines_0
+		self.streamlines_1 = streamlines_1
+		self.streamarrows_0 = streamarrows_0
+		self.streamarrows_1 = streamarrows_1
+		self.switching_manifold = switching_manifold
+
+class NonConformantKeyword(Exception):
+	def __init__(self, non_conformant_keyword, *args):
+		super().__init__(*args)
+		self.non_conformant_keyword = non_conformant_keyword
+	
+	def __str__(self):
+		return f"The keyword {self.non_conformant_keyword} is not of the form <target command>_<payload>"
+
+class UnkownTarget(Exception):
+	def __init__(self, unknown_target, *args):
+		super().__init__(*args)
+		self.unknown_target = unknown_target
+	
+	def __str__(self):
+		return f"The target {self.unknown_target} is not known"
+
+def get_keywords(**kwargs):
+	keywords = {**kwargs}
+	
+	stream_kwargs = {}
+	manifold_kwargs = {}
+	for key in keywords:
+		parts = key.split("_", 1)
+		if len(parts) != 2:
+			raise NonConformantKeyword(key)
+		
+		target = parts[0]
+		keyword = parts[1]
+		
+		if target == 'stream':
+			stream_kwargs[keyword] = keywords[key]
+		elif target == 'manifold':
+			manifold_kwargs[keyword] = keywords[key]
+		else:
+			raise UnkownTarget(target)
+		
+	return (stream_kwargs, manifold_kwargs)
+
+def generate_stream_plot(piecewiseBifield, piecewiseBifieldMeshgridGenerator, *argv, **kwargs):
+	try:
+		keyword_arguments = {**kwargs}
+		(stream_kwargs, manifold_kwargs) = get_keywords(**keyword_arguments)
+		
+		piecewise_bifield_streamplot = PiecewiseBifieldStreamplot(piecewiseBifield, piecewiseBifieldMeshgridGenerator)
+		(stream_lines_0, stream_lines_1) = piecewise_bifield_streamplot.generate_stream_lines(*argv, **stream_kwargs)
+		
+		stream_arrows_0 = streamlines.generate_stream_arrows(stream_lines_0)
+		stream_arrows_1 = streamlines.generate_stream_arrows(stream_lines_1)
+		
+		switching_manifold = piecewise_bifield_streamplot.generate_switching_manifold(**manifold_kwargs)
+		
+		return BifieldStreamplot(
+				stream_lines_0, stream_lines_1,
+				stream_arrows_0, stream_arrows_1,
+				switching_manifold
+			)
+	except NonConformantKeyword as non_conformant_keyword:
+		raise non_conformant_keyword
+	except UnkownTarget as unkown_target:
+		raise unkown_target
+	
 
 def test_plot(self):
 	plt.figure(figsize=(10, 10))
