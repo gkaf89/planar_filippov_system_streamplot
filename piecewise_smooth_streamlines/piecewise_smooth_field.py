@@ -291,7 +291,7 @@ def main():
 	
 	meshgrid_generator = IsoPiecewiseBifieldMeshgridGenerator(min_value=(-5,-50), max_value=(10,100), step=(0.1, 0.1))
 	
-	bifield_streamplot = generate_streamplot( piecewise_bifield, meshgrid_generator, stream_density=1.4, manifold_density=1.4)
+	bifield_streamplot = generate_streamplot( piecewise_bifield, meshgrid_generator, stream_density=1.4)
 	write_streamplot('streamplot', bifield_streamplot)
 
 if __name__ == '__main__':
