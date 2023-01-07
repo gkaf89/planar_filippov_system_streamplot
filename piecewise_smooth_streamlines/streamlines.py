@@ -317,10 +317,10 @@ def generate_streamplot(vector_field, meshgrid_generator, *argv, **kwargs):
 def write_streamplot(directory, streamplot):
 	try:
 		os.mkdir(directory)
-	except FileExistsError as err:
+	except FileExistsError:
 		print('The directory provided already exists.')
 		sys.exit('Program terminating.')
-	except FileNotFoundError as err:
+	except FileNotFoundError:
 		print('Parent directory does not exist.')
 		sys.exit('Program terminating.')
 	
