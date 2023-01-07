@@ -4,6 +4,8 @@ import abc
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 
+import math
+
 import streamlines as streamlines
 
 # See: https://stackoverflow.com/questions/5666056/matplotlib-extracting-data-from-contour-lines
@@ -230,7 +232,7 @@ def get_keywords(**kwargs):
 		
 	return (stream_kwargs, manifold_kwargs)
 
-def generate_stream_plot(piecewiseBifield, piecewiseBifieldMeshgridGenerator, *argv, **kwargs):
+def generate_streamplot(piecewiseBifield, piecewiseBifieldMeshgridGenerator, *argv, **kwargs):
 	try:
 		keyword_arguments = {**kwargs}
 		(stream_kwargs, manifold_kwargs) = get_keywords(**keyword_arguments)
@@ -266,3 +268,24 @@ def write_streamplot(directory, bifiled_streamplot):
 			 }
 	
 	streamlines.write_plot_files(directory, lines, arrows)
+
+def main():
+	C = 0.6e-3
+	L = 1.7e-3
+	R = 8
+	E = 48
+	i_L_s = 4.5
+	v_C_s = 36
+	phi = math.pi - math.pi/4
+	
+	f_0 = lambda i_L, v_C : ((1/L)*(-v_C), (1/C)*(i_L - v_C/R))
+	f_1 = lambda i_L, v_C : ((1/L)*(-v_C + E), (1/C)*(i_L - v_C/R))
+	
+	switching_manifold = lambda i_L, v_C : math.cos(phi)*(i_L - i_L_s) + math.sin(phi)*(v_C - v_C_s)
+	
+	piecewise_bifield = PiecewiseBifield(f_0, f_1, switching_manifold)
+	
+	meshgrid_generator = IsoPiecewiseBifieldMeshgridGenerator(min_value=(-5,-50), max_value=(10,100), step=(0.1, 0.1))
+	
+	bifield_streamplot = generate_streamplot( piecewise_bifield, meshgrid_generator, stream_density=1.4, manifold_density=1.4)
+	write_streamplot('streamplot', bifield_streamplot)
