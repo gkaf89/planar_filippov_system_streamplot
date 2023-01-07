@@ -4,6 +4,8 @@ import abc
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 
+from functools import reduce
+
 import math
 
 import streamlines as streamlines
@@ -161,8 +163,17 @@ class PiecewiseBifieldStreamplot:
 		def filter_with_control_active(line):
 			return filter_stream_line(line, 1, self.piecewise_bifield.manifold)
 		
-		stream_lines_0 = map(filter_with_control_inactive, extended_stream_lines_0)
-		stream_lines_1 = map(filter_with_control_active, extended_stream_lines_1)
+		def get_invisible_line_remover(filter_line):
+			def remove_invisible_line(line_list, line):
+				filtered_line = filter_line(line)
+				if len(filtered_line) > 0:
+					line_list.append(filtered_line)
+				return line_list
+			
+			return remove_invisible_line
+		
+		stream_lines_0 = reduce(get_invisible_line_remover(filter_with_control_inactive), extended_stream_lines_0, [])
+		stream_lines_1 = reduce(get_invisible_line_remover(filter_with_control_active), extended_stream_lines_1, [])
 		
 		return (stream_lines_0, stream_lines_1)
 		
