@@ -89,7 +89,11 @@ def get_crossing_point(manifold, x_0, x_1):
 	def linear_approximation(t):
 		return x_0 + t*dx
 	
-	t_0 = fsolve(lambda t : manifold(linear_approximation(t)), 0.5)
+	def parametrized_planar_manifold(t):
+		x = linear_approximation(t)
+		return manifold(x[0], x[1])
+	
+	t_0 = fsolve(parametrized_planar_manifold, 0.5)
 	
 	return linear_approximation(t_0)
 
