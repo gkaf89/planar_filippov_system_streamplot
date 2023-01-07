@@ -78,7 +78,7 @@ def drop_invisible_subsequence(line, u, manifold, idx):
 def extract_visible_subsequence(line, u, manifold, idx, visible_line_section):
 	while idx < len(line) and control_active_on_negative(line[idx], u, manifold):
 		x = line[idx]
-		visible_line_section.apend(x)
+		visible_line_section.append(x)
 		idx = idx + 1
 	
 	return idx
