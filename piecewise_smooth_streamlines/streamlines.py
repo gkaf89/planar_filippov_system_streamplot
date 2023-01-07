@@ -267,7 +267,7 @@ def __get_line_midpoint_arrow(line, min_arrow_extension_factor = 0.01):
 def generate_stream_arrows(stream_lines):
 	return list(map(__get_line_midpoint_arrow, stream_lines))
 
-def __write_stream_lines(filename, stream_lines):
+def __write_lines(filename, stream_lines):
 	with open(filename, 'w') as file:
 		separate_next_line = False
 		for line in stream_lines:
@@ -281,7 +281,7 @@ def __write_stream_lines(filename, stream_lines):
 				file.write(f'{point[1]:.16f}')
 				file.write('\n')
 
-def __write_stream_arrows(filename, arrows):
+def __write_arrows(filename, arrows):
 	with open(filename, 'w') as file:
 		separate_next_line = False
 		for arrow in arrows:
@@ -314,7 +314,7 @@ def generate_streamplot(vector_field, meshgrid_generator, *argv, **kwargs):
 	stream_arrows = generate_stream_arrows(stream_lines)
 	return Streamplot(stream_lines, stream_arrows)
 
-def write_streamplot(directory, streamplot):
+def write_plot_files(directory, lines, arrows):
 	try:
 		os.mkdir(directory)
 	except FileExistsError:
@@ -324,11 +324,19 @@ def write_streamplot(directory, streamplot):
 		print('Parent directory does not exist.')
 		sys.exit('Program terminating.')
 	
-	streamlines_file = os.path.join(directory, 'streamlines.dat')
-	__write_stream_lines(str(streamlines_file), streamplot.streamlines)
+	for name in lines:
+		lines_file = os.path.join(directory, name)
+		__write_lines(str(lines_file), lines[name])
 	
-	streamarrows_file = os.path.join(directory, 'streamarrows.dat')
-	__write_stream_arrows(str(streamarrows_file), streamplot.streamarrows)
+	for name in arrows:
+		arrows_file = os.path.join(directory, name)
+		__write_arrows(str(arrows_file), arrows[name])
+
+def write_streamplot(directory, streamplot):
+	lines = {'streamlines.dat' : streamplot.streamlines}
+	arrows = {'streamarrows.dat' : streamplot.streamarrows}
+	
+	write_plot_files(directory, lines, arrows)
 
 def main():
 	f = lambda X, Y : ((X + 1)/((X+1)**2 + Y**2) - (X - 1)/((X-1)**2 + Y**2), Y/((X+1)**2 + Y**2) - Y/((X-1)**2 + Y**2))
