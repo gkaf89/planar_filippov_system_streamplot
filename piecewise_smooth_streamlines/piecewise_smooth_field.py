@@ -244,11 +244,25 @@ def generate_stream_plot(piecewiseBifield, piecewiseBifieldMeshgridGenerator, *a
 		switching_manifold = piecewise_bifield_streamplot.generate_switching_manifold(**manifold_kwargs)
 		
 		return BifieldStreamplot(
-				stream_lines_0, stream_lines_1,
-				stream_arrows_0, stream_arrows_1,
-				switching_manifold
-			)
+					stream_lines_0, stream_lines_1,
+					stream_arrows_0, stream_arrows_1,
+					switching_manifold
+			   )
 	except NonConformantKeyword as non_conformant_keyword:
 		raise non_conformant_keyword
 	except UnkownTarget as unkown_target:
 		raise unkown_target
+
+def write_streamplot(directory, bifiled_streamplot):
+	lines = {
+			   'streamlines_0.dat' : bifiled_streamplot.streamlines_0,
+			   'streamlines_1.dat' : bifiled_streamplot.streamlines_1,
+			   'switching_manifold.dat' : bifiled_streamplot.switching_manifold,
+		    }
+	
+	arrows = {
+				'streamarrows_0.dat' : bifiled_streamplot.streamarrows_0,
+				'streamarrows_1.dat' : bifiled_streamplot.streamarrows_1
+			 }
+	
+	streamlines.write_plot_files(directory, lines, arrows)
