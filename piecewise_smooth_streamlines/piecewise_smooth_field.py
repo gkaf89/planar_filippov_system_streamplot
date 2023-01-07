@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 
 from functools import reduce
+# See: tail_recursive
 
 import math
 
