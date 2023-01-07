@@ -289,3 +289,6 @@ def main():
 	
 	bifield_streamplot = generate_streamplot( piecewise_bifield, meshgrid_generator, stream_density=1.4, manifold_density=1.4)
 	write_streamplot('streamplot', bifield_streamplot)
+
+if __name__ == '__main__':
+	main()
