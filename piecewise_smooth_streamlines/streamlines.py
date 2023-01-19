@@ -265,7 +265,7 @@ def __get_line_midpoint_arrow(line, min_arrow_extension_factor = 0.01):
 		arrow_extension_factor)
 
 def generate_stream_arrows(stream_lines):
-	return list(map(__get_line_midpoint_arrow, stream_lines))
+	return list(filter(lambda x : x != None, map(__get_line_midpoint_arrow, stream_lines)))
 
 def __write_lines(filename, stream_lines):
 	with open(filename, 'w') as file:
