@@ -128,17 +128,29 @@ def prepend_crossing_point(line, manifold, idx, visible_line_section):
 	
 	visible_line_section.append(x_t);
 
-def filter_stream_line(line, u, manifold):
+def extract_continuous_visible_line_segment(line, u, manifold, idx):
 	visible_line_section = []
 	
+	idx = extract_visible_subsequence(line, u, manifold, idx, visible_line_section)
+	append_crossing_point(line, manifold, idx, visible_line_section)
+	idx = drop_invisible_subsequence(line, u, manifold, idx)
+	prepend_crossing_point(line, manifold, idx, visible_line_section)
+	
+	return (idx, visible_line_section)
+
+def append_non_empty(element, element_list):
+	if element:
+		element_list.append(element)
+	return element_list
+
+def filter_stream_line(line, u, manifold):
+	visible_line_sections = []
 	idx = 0
 	while idx < len(line):
-		idx = extract_visible_subsequence(line, u, manifold, idx, visible_line_section)
-		append_crossing_point(line, manifold, idx, visible_line_section)
-		idx = drop_invisible_subsequence(line, u, manifold, idx)
-		prepend_crossing_point(line, manifold, idx, visible_line_section)
+		idx, visible_section = extract_continuous_visible_line_segment(line, u, manifold, idx)
+		visible_line_sections = append_non_empty(visible_section, visible_line_sections)
 	
-	return visible_line_section
+	return visible_line_sections
 
 class PiecewiseBifield:
 	def __init__(self, vector_field_0, vector_field_1, manifold):
@@ -164,17 +176,24 @@ class PiecewiseBifieldStreamplot:
 		def filter_with_control_active(line):
 			return filter_stream_line(line, 1, self.piecewise_bifield.manifold)
 		
-		def get_invisible_line_remover(filter_line):
-			def remove_invisible_line(line_list, line):
-				filtered_line = filter_line(line)
-				if len(filtered_line) > 0:
-					line_list.append(filtered_line)
+		def get_invisible_line_section_remover(filter_line):
+			def remove_invisible_line_section(line_list, line):
+				filtered_lines = filter_line(line)
+				line_list.extend(filtered_lines)
 				return line_list
 			
-			return remove_invisible_line
+			return remove_invisible_line_section
 		
-		stream_lines_0 = reduce(get_invisible_line_remover(filter_with_control_inactive), extended_stream_lines_0, [])
-		stream_lines_1 = reduce(get_invisible_line_remover(filter_with_control_active), extended_stream_lines_1, [])
+		stream_lines_0 = reduce(
+			get_invisible_line_section_remover(filter_with_control_inactive),
+			extended_stream_lines_0,
+			[]
+		)
+		stream_lines_1 = reduce(
+			get_invisible_line_section_remover(filter_with_control_active),
+			extended_stream_lines_1,
+			[]
+		)
 		
 		return (stream_lines_0, stream_lines_1)
 		
