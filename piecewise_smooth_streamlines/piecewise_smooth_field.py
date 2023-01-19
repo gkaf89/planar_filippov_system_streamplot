@@ -292,7 +292,7 @@ def main():
 	E = 48
 	i_L_s = 4.5
 	v_C_s = 36
-	phi = math.pi - math.pi/4
+	phi = math.pi/4
 	
 	f_0 = lambda i_L, v_C : ((1/L)*(-v_C), (1/C)*(i_L - v_C/R))
 	f_1 = lambda i_L, v_C : ((1/L)*(-v_C + E), (1/C)*(i_L - v_C/R))
