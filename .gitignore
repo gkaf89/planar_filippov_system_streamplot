@@ -6,6 +6,7 @@
 *\.pdf
 *\.png
 *\.eps
+*\.svg
 
 # Ignore pipenv local environmnent files
 Pipfile
