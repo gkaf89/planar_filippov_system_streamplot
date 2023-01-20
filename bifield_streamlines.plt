@@ -1,5 +1,5 @@
-set terminal pngcairo  transparent enhanced font "arial,10" fontscale 1.0 size 1000, 1200
-set output 'test.png'
+set terminal svg #transparent enhanced font "arial,10" fontscale 1.0 size 1000, 1200
+set output 'test.svg'
 
 set datafile separator ";"
 
