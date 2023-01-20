@@ -78,13 +78,15 @@ def drop_invisible_subsequence(line, u, manifold, idx):
 	return idx
 
 # Indepotent function
-def extract_visible_subsequence(line, u, manifold, idx, visible_line_section):
+def extract_visible_subsequence(line, u, manifold, idx):
+	visible_line_section = []
+	
 	while idx < len(line) and control_active_on_negative(line[idx], u, manifold):
 		x = line[idx]
 		visible_line_section.append(x)
 		idx = idx + 1
 	
-	return idx
+	return (idx, visible_line_section)
 
 def get_crossing_point(manifold, x_0, x_1):
 	dx = x_1 - x_0
@@ -100,41 +102,30 @@ def get_crossing_point(manifold, x_0, x_1):
 	
 	return linear_approximation(t_0)
 
-def append_crossing_point(line, manifold, idx, visible_line_section):
-	if not(visible_line_section):
-		return
+def extend_edges_to_manifold(line, manifold, begin, end, visible_line_section):
+	if not(visible_line_section) or not(line):
+		return visible_line_section
+		
+	if begin > 0:
+		x_0 = line[begin-1]
+		x_1 = visible_line_section[0]
+		x_t = get_crossing_point(manifold, x_0, x_1)
+		visible_line_section.insert(0, x_t)
 	
-	if idx >= len(line):
-		return
+	if end < len(line):
+		x_0 = visible_line_section[-1]
+		x_1 = line[end]
+		x_t = get_crossing_point(manifold, x_0, x_1)
+		visible_line_section.append(x_t)
 	
-	x_0 = visible_line_section[-1]
-	x_1 = line[idx]
-	
-	x_t = get_crossing_point(manifold, x_0, x_1)
-	
-	visible_line_section.append(x_t);
-
-def prepend_crossing_point(line, manifold, idx, visible_line_section):
-	if idx >= len(line):
-		return
-	
-	if idx < 1:
-		return
-	
-	x_0 = line[idx-1]
-	x_1 = line[idx]
-	
-	x_t = get_crossing_point(manifold, x_0, x_1)
-	
-	visible_line_section.append(x_t);
+	return visible_line_section
 
 def extract_continuous_visible_line_segment(line, u, manifold, idx):
-	visible_line_section = []
+	begin = idx
+	end, visible_line_section = extract_visible_subsequence(line, u, manifold, idx)
+	visible_line_section = extend_edges_to_manifold(line, manifold, begin, end, visible_line_section)
 	
-	idx = extract_visible_subsequence(line, u, manifold, idx, visible_line_section)
-	append_crossing_point(line, manifold, idx, visible_line_section)
-	idx = drop_invisible_subsequence(line, u, manifold, idx)
-	prepend_crossing_point(line, manifold, idx, visible_line_section)
+	idx = drop_invisible_subsequence(line, u, manifold, end)
 	
 	return (idx, visible_line_section)
 
