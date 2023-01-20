@@ -129,17 +129,13 @@ def extract_continuous_visible_line_segment(line, u, manifold, idx):
 	
 	return (idx, visible_line_section)
 
-def append_non_empty(element, element_list):
-	if element:
-		element_list.append(element)
-	return element_list
-
 def filter_stream_line(line, u, manifold):
 	visible_line_sections = []
 	idx = 0
 	while idx < len(line):
 		idx, visible_section = extract_continuous_visible_line_segment(line, u, manifold, idx)
-		visible_line_sections = append_non_empty(visible_section, visible_line_sections)
+		if visible_section:
+			visible_line_sections.append(visible_section)
 	
 	return visible_line_sections
 
