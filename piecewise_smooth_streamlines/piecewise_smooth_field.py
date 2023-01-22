@@ -53,7 +53,7 @@ class IsoPiecewiseBifieldMeshgridGenerator(PiecewiseBifieldMeshgridGenerator):
 		
 		return PiecewiseBifieldMeshgrid(X, Y, Fx_0, Fy_0, Fx_1, Fy_1, S)
 
-def generate_extended_stream_lines(piecewiseBifieldMeshgrid, *argv, **kwargs):
+def _generate_extended_stream_lines(piecewiseBifieldMeshgrid, *argv, **kwargs):
 	X, Y = (piecewiseBifieldMeshgrid.X, piecewiseBifieldMeshgrid.Y)
 	Fx_0, Fy_0 = (piecewiseBifieldMeshgrid.Fx_0, piecewiseBifieldMeshgrid.Fy_0)
 	Fx_1, Fy_1 = (piecewiseBifieldMeshgrid.Fx_1, piecewiseBifieldMeshgrid.Fy_1)
@@ -66,29 +66,29 @@ def generate_extended_stream_lines(piecewiseBifieldMeshgrid, *argv, **kwargs):
 	
 	return (stream_lines_0, stream_lines_1)
 
-def control_active_on_negative(x, u, manifold):
+def _control_active_on_negative(x, u, manifold):
 	alpha = - (2*u - 1)
 	return alpha * manifold(x[0], x[1]) >= 0
 
 # Indepotent function
-def drop_invisible_subsequence(line, u, manifold, idx):
-	while idx < len(line) and not(control_active_on_negative(line[idx], u, manifold)):
+def _drop_invisible_subsequence(line, u, manifold, idx):
+	while idx < len(line) and not(_control_active_on_negative(line[idx], u, manifold)):
 		idx = idx + 1
 	
 	return idx
 
 # Indepotent function
-def extract_visible_subsequence(line, u, manifold, idx):
+def _extract_visible_subsequence(line, u, manifold, idx):
 	visible_line_section = []
 	
-	while idx < len(line) and control_active_on_negative(line[idx], u, manifold):
+	while idx < len(line) and _control_active_on_negative(line[idx], u, manifold):
 		x = line[idx]
 		visible_line_section.append(x)
 		idx = idx + 1
 	
 	return (idx, visible_line_section)
 
-def get_crossing_point(manifold, x_0, x_1):
+def _get_crossing_point(manifold, x_0, x_1):
 	dx = x_1 - x_0
 	
 	def linear_approximation(t):
@@ -102,30 +102,30 @@ def get_crossing_point(manifold, x_0, x_1):
 	
 	return linear_approximation(t_0)
 
-def extend_edges_to_manifold(line, manifold, begin, end, visible_line_section):
+def _extend_edges_to_manifold(line, manifold, begin, end, visible_line_section):
 	if not(visible_line_section) or not(line):
 		return visible_line_section
 		
 	if begin > 0:
 		x_0 = line[begin-1]
 		x_1 = visible_line_section[0]
-		x_t = get_crossing_point(manifold, x_0, x_1)
+		x_t = _get_crossing_point(manifold, x_0, x_1)
 		visible_line_section.insert(0, x_t)
 	
 	if end < len(line):
 		x_0 = visible_line_section[-1]
 		x_1 = line[end]
-		x_t = get_crossing_point(manifold, x_0, x_1)
+		x_t = _get_crossing_point(manifold, x_0, x_1)
 		visible_line_section.append(x_t)
 	
 	return visible_line_section
 
-def extract_continuous_visible_line_segment(line, u, manifold, idx):
+def _extract_continuous_visible_line_segment(line, u, manifold, idx):
 	begin = idx
-	end, visible_line_section = extract_visible_subsequence(line, u, manifold, idx)
-	visible_line_section = extend_edges_to_manifold(line, manifold, begin, end, visible_line_section)
+	end, visible_line_section = _extract_visible_subsequence(line, u, manifold, idx)
+	visible_line_section = _extend_edges_to_manifold(line, manifold, begin, end, visible_line_section)
 	
-	idx = drop_invisible_subsequence(line, u, manifold, end)
+	idx = _drop_invisible_subsequence(line, u, manifold, end)
 	
 	return (idx, visible_line_section)
 
@@ -133,7 +133,7 @@ def filter_stream_line(line, u, manifold):
 	visible_line_sections = []
 	idx = 0
 	while idx < len(line):
-		idx, visible_section = extract_continuous_visible_line_segment(line, u, manifold, idx)
+		idx, visible_section = _extract_continuous_visible_line_segment(line, u, manifold, idx)
 		if visible_section:
 			visible_line_sections.append(visible_section)
 	
@@ -155,7 +155,7 @@ class PiecewiseBifieldStreamplot:
 		self.piecewise_bifield = piecewiseBifield
 	
 	def generate_stream_lines(self, *argv, **kwargs):
-		(extended_stream_lines_0, extended_stream_lines_1) = generate_extended_stream_lines(self.piecewise_bifield_meshgrid, *argv, **kwargs)
+		(extended_stream_lines_0, extended_stream_lines_1) = _generate_extended_stream_lines(self.piecewise_bifield_meshgrid, *argv, **kwargs)
 		
 		def filter_with_control_inactive(line):
 			return filter_stream_line(line, 0, self.piecewise_bifield.manifold)
