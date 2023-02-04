@@ -102,30 +102,50 @@ def _get_crossing_point(manifold, x_0, x_1):
 	
 	return linear_approximation(t_0)
 
-def _extend_edges_to_manifold(line, manifold, begin, end, visible_line_section):
+def _extend_front_to_manifold(line, manifold, begin, visible_line_section):
 	if not(visible_line_section) or not(line):
 		return visible_line_section
 		
-	if begin > 0:
-		x_0 = line[begin-1]
-		x_1 = visible_line_section[0]
+	last_hidden_point = begin - 1
+	if last_hidden_point >= 0 and begin <= len(line):
+		x_0 = line[last_hidden_point]
+		x_1 = line[begin]
 		x_t = _get_crossing_point(manifold, x_0, x_1)
-		visible_line_section.insert(0, x_t)
+		visible_line_section.append(x_t)
 	
-	if end < len(line):
-		x_0 = visible_line_section[-1]
+	return visible_line_section
+
+def _extend_back_to_manifold(line, manifold, end, visible_line_section):
+	if not(visible_line_section) or not(line):
+		return visible_line_section
+
+	last_visible_point = end - 1
+	if end < len(line) and last_visible_point >= 0:
+		x_0 = line[last_visible_point]
 		x_1 = line[end]
 		x_t = _get_crossing_point(manifold, x_0, x_1)
 		visible_line_section.append(x_t)
 	
 	return visible_line_section
 
-def _extract_continuous_visible_line_segment(line, u, manifold, idx):
-	begin = idx
-	end, visible_line_section = _extract_visible_subsequence(line, u, manifold, idx)
-	visible_line_section = _extend_edges_to_manifold(line, manifold, begin, end, visible_line_section)
+# Indepotent function
+def _extract_end_extend_visible_subsequence(line, u, manifold, idx):
+	def visible_line_section_starting_is_not_empty(line, u, manifold, idx):
+		return idx < len(line) and _control_active_on_negative(line[idx], u, manifold)
 	
-	idx = _drop_invisible_subsequence(line, u, manifold, end)
+	visible_line_section = []
+	if visible_line_section_starting_is_not_empty(line, u, manifold, idx):
+		begin = idx
+		visible_line_section = _extend_front_to_manifold(line, manifold, begin, visible_line_section)
+		end, visible_line_section = _extract_visible_subsequence(line, u, manifold, begin)
+		visible_line_section = _extend_back_to_manifold(line, manifold, end, visible_line_section)
+		idx = end
+	
+	return (idx, visible_line_section)
+
+def _extract_continuous_visible_line_segment(line, u, manifold, idx):
+	idx, visible_line_section = _extract_end_extend_visible_subsequence(line, u, manifold, idx)
+	idx = _drop_invisible_subsequence(line, u, manifold, idx)
 	
 	return (idx, visible_line_section)
 
