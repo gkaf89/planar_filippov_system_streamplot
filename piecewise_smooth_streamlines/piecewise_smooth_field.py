@@ -10,6 +10,7 @@ from functools import reduce
 import math
 
 import streamlines as streamlines
+import datastructures as struct
 
 # See: https://stackoverflow.com/questions/5666056/matplotlib-extracting-data-from-contour-lines
 
@@ -78,12 +79,10 @@ def _drop_invisible_subsequence(line, u, manifold, idx):
 	return idx
 
 # Indepotent function
-def _extract_visible_subsequence(line, u, manifold, idx):
-	visible_line_section = []
-	
+def _extract_visible_subsequence(line, u, manifold, idx, visible_line_section):
 	while idx < len(line) and _control_active_on_negative(line[idx], u, manifold):
 		x = line[idx]
-		visible_line_section.append(x)
+		visible_line_section.push_front(x)
 		idx = idx + 1
 	
 	return (idx, visible_line_section)
@@ -103,31 +102,32 @@ def _get_crossing_point(manifold, x_0, x_1):
 	return linear_approximation(t_0)
 
 def _extend_edges_to_manifold(line, manifold, begin, end, visible_line_section):
-	if not(visible_line_section) or not(line):
+	if visible_line_section.empty() or not(line):
 		return visible_line_section
 		
 	if begin > 0:
 		x_0 = line[begin-1]
-		x_1 = visible_line_section[0]
+		x_1 = visible_line_section.back()
 		x_t = _get_crossing_point(manifold, x_0, x_1)
-		visible_line_section.insert(0, x_t)
+		visible_line_section.push_back(x_t)
 	
 	if end < len(line):
-		x_0 = visible_line_section[-1]
+		x_0 = visible_line_section.front()
 		x_1 = line[end]
 		x_t = _get_crossing_point(manifold, x_0, x_1)
-		visible_line_section.append(x_t)
+		visible_line_section.push_front(x_t)
 	
 	return visible_line_section
 
 def _extract_continuous_visible_line_segment(line, u, manifold, idx):
-	begin = idx
-	end, visible_line_section = _extract_visible_subsequence(line, u, manifold, idx)
-	visible_line_section = _extend_edges_to_manifold(line, manifold, begin, end, visible_line_section)
+	visible_line_section = struct.Dequeue()
+	begin_visible = idx
 	
-	idx = _drop_invisible_subsequence(line, u, manifold, end)
+	end_visible, visible_line_section = _extract_visible_subsequence(line, u, manifold, begin_visible, visible_line_section)
+	visible_line_section = _extend_edges_to_manifold(line, manifold, begin_visible, end_visible, visible_line_section)
+	idx_section_end = _drop_invisible_subsequence(line, u, manifold, end_visible)
 	
-	return (idx, visible_line_section)
+	return (idx_section_end, visible_line_section.to_list())
 
 def filter_stream_line(line, u, manifold):
 	visible_line_sections = []
