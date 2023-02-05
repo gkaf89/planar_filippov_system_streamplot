@@ -92,6 +92,13 @@ class Dequeue:
 		other.__head.next = self.__tail
 		
 		self.__tail = other.__tail
+	
+	def to_list(self):
+		ls= []
+		while not(self.empty()):
+			ls.append(self.back())
+			self.pop_back()
+		return ls
 
 def main():
 	test_results = []
