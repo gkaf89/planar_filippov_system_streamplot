@@ -24,7 +24,7 @@
 \maketitle
 
 \begin{abstract}
-A Python library to generate stream plots of planar Fillipov systems for Gnuplot scripts.
+A Python library to generate stream plots of planar Filippov systems for Gnuplot scripts.
 \end{abstract}
 
 \thispagestyle{empty}
@@ -44,7 +44,7 @@ A Python library to generate stream plots of planar Fillipov systems for Gnuplot
 
 \section{Introduction}
 
-The library transforms the output of the \texttt{streamplot} function of the \texttt{matplotlib.pyplot} Python plotting library in a form that can be plotted by Gnuplot. Smooth planar vector field and Filippov planar vector filed stream plots are supported. The input to the system is functions describing the vector field and the switching surface, and the output is a set of files in a folder with a name provided by the user. For a smooth planar field, there is an output file containing the stream lines, and a file containing the position of the direction arrows for the stream plot, positioned approximately in the middle of each streamline. For a planar Fillipov field, there is a pair for streamline and stream arrow files for each of the two smooth fields, and a file with the switching manifold.
+The Gnuplot plotting library lacks a proper function to generate streamline plots. The \texttt{matplotlib} library contains functions for generating streamline plots with a variety of options, but without the native TeX integration that Gnuplot offers. The library presented here transforms the output of the \texttt{streamplot} function of the \texttt{matplotlib.pyplot} Python plotting library in a set of files that from which Gnuplot can plot a streamline plot. Smooth planar vector field and Filippov planar vector filed streamline plots are supported. The input to the system is functions describing the vector field and the switching surface, and the output is a set of files in a folder with a name provided by the user. For a smooth planar field, there is an output file containing the stream lines, and a file containing the position of the direction arrows for the stream plot, positioned approximately in the middle of each streamline. For a planar Filippov field, there is a pair for streamline and stream arrow files for each of the two smooth fields, and a file with the switching manifold.
 
 \section{The plotting algorithm}
 
