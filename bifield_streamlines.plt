@@ -3,8 +3,9 @@ set output 'test.svg'
 
 set datafile separator ";"
 
+# See Gnuplot documentation: Linestyles vs linetypes
 set style arrow 1 head size 0.15,15 fixed filled linestyle 1
-set style line 2 lc rgb 'black' pt 7   # circle
+set style line 2 lc rgb 'black' pointtype 7 pointsize 2 linewidth 4  # circle
 
 $point_data << EOD
 4.5;36.0
