@@ -125,30 +125,3 @@ class Dequeue(Generic[T]):
 			self.pop_back()
 			data = self.back()
 		return ls
-
-def main() -> None:
-	test_results : list[bool] = []
-	
-	dequeue : Dequeue[int] = Dequeue()
-	
-	test_results.append(dequeue.empty())
-	
-	dequeue.push_front(1)
-	test_results.append(dequeue.front() == 1 and dequeue.back() == 1)
-	
-	dequeue.pop_front()
-	test_results.append(dequeue.empty())
-	
-	dequeue.push_front(1)
-	test_results.append(dequeue.front() == 1 and dequeue.back() == 1)
-	
-	dequeue.pop_back()
-	test_results.append(dequeue.empty())
-	
-	dequeue.push_front(1)
-	dequeue.push_back(2)
-	test_results.append(dequeue.front() == 1 and dequeue.back() == 2)
-
-if __name__ == '__main__':
-	import unittest
-	main()
