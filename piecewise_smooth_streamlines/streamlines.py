@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import TypeVar, Generic, Optional, List #, get_type_hints
 import numpy as np
 import matplotlib.pyplot as plt
 import bitstring as btstr
